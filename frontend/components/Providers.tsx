@@ -1,11 +1,9 @@
 'use client';
 import { Toaster } from 'react-hot-toast';
-import CursorFollower from '@/components/CursorFollower';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
     return (
         <>
-            <CursorFollower />
             <Toaster
                 position="top-right"
                 toastOptions={{
