@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+:root {
+  /* Ruby Theme & Dark Void Palette */
+  --background: #000000;
+  --foreground: #ffffff;
+
+  --ruby-500: #E0115F;
+  --ruby-600: #C21E56;
+  --ruby-700: #A01040;
+  --ruby-800: #800020;
+  --ruby-900: #500010;
+
+  --gold-500: #FFD700;
+  --gold-600: #D4AF37;
+
+  --aurora-blue: #4c1d95;
+  --aurora-ruby: #9f1239;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .font-sans {
+    font-family: var(--font-jost), sans-serif;
+  }
+
+  .font-serif {
+    font-family: var(--font-playfair), serif;
+  }
+}
+
+/* Designy-style Aurora Background */
+.aurora-bg {
+  background-color: #000000;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(76, 29, 149, 0.25) 0%, transparent 40%),
+    /* Blue/Violet Top Left */
+    radial-gradient(circle at 90% 10%, rgba(159, 18, 57, 0.20) 0%, transparent 40%),
+    /* Red/Ruby Top Right */
+    radial-gradient(circle at 50% 50%, rgba(200, 200, 255, 0.03) 0%, transparent 60%);
+  /* Subtle center glow */
+  background-attachment: fixed;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.015);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.shimmer-text {
+  background: linear-gradient(90deg, #F8025A 0%, #ffc0cb 50%, #F8025A 100%);
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: 200% center;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-ruby-500: var(--ruby-500);
+  --color-ruby-600: var(--ruby-600);
+  --color-ruby-700: var(--ruby-700);
+  --color-ruby-800: var(--ruby-800);
+  --color-ruby-900: var(--ruby-900);
+
+  --color-gold: var(--gold-500);
+  --color-gold-dark: var(--gold-600);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-jost), sans-serif;
+}

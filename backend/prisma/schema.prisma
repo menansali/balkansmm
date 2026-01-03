@@ -1,0 +1,119 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id               Int      @id @default(autoincrement())
+  email            String   @unique
+  password         String
+  name             String?
+  role             String   @default("user") // user, admin, reseller
+  balance          Float    @default(0.0)
+  totalSpent       Float    @default(0.0)    // For VIP tier calculation
+  apiKey           String?  @unique          // For Developer API
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  // Affiliate System
+  referralCode     String   @unique @default(uuid())
+  affiliateBalance Float    @default(0.0)
+  referredById     Int?
+  referredBy       User?    @relation("Referrals", fields: [referredById], references: [id])
+  referrals        User[]   @relation("Referrals")
+
+  orders           Order[]
+  transactions     Transaction[]
+  tickets          Ticket[]
+}
+
+model Service {
+  id                Int      @id @default(autoincrement())
+  name              String
+  category          String
+  description       String?
+  rate              Float    // Rate per 1000
+  providerRate      Float?   // Cost price from provider
+  min               Int
+  max               Int
+  provider          String   // 'morethanpanel', 'justanotherpanel'
+  providerServiceId String
+  status            Boolean  @default(true)
+  orders            Order[]
+}
+
+model Order {
+  id              Int      @id @default(autoincrement())
+  user            User     @relation(fields: [userId], references: [id])
+  userId          Int
+  service         Service  @relation(fields: [serviceId], references: [id])
+  serviceId       Int
+  link            String
+  quantity        Int
+  charge          Float    // Amount deducted from user balance
+  cost            Float?   // Amount paid to provider (for profit calculation)
+  status          String   @default("Pending") // Pending, Processing, Completed, Canceled
+  
+  // Provider Info
+  provider        String?   // 'morethanpanel', 'justanotherpanel'
+  providerOrderId String?
+
+  // Drip Feed
+  dripFeed        Boolean  @default(false)
+  runs            Int?     // How many times to run
+  interval        Int?     // Minutes between runs
+
+  // Refill
+  refill          Boolean  @default(false)
+  refillStatus    String? // Pending, Completed
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Transaction {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  amount    Float
+  type      String   // deposit, refund, order_charge
+  createdAt DateTime @default(now())
+}
+
+model Ticket {
+  id        Int      @id @default(autoincrement())
+  subject   String
+  status    String   @default("Open") // Open, Answered, Closed
+  priority  String   @default("Normal") // Low, Normal, High
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  messages  TicketMessage[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TicketMessage {
+  id        Int      @id @default(autoincrement())
+  ticket    Ticket   @relation(fields: [ticketId], references: [id])
+  ticketId  Int
+  message   String
+  isAdmin   Boolean  @default(false) // True if sent by support/admin
+  createdAt DateTime @default(now())
+}
+
+model Announcement {
+  id        Int      @id @default(autoincrement())
+  message   String
+  type      String   @default("info")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
