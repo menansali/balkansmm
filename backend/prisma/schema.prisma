@@ -86,6 +86,12 @@ model Transaction {
   userId    Int
   amount    Float
   type      String   // deposit, refund, order_charge
+  
+  // Payment Gateway Info
+  gateway       String? // 'coinbase', 'stripe', 'manual'
+  gatewayTxId   String? // External Transaction ID
+  gatewayStatus String? // 'pending', 'confirmed', 'failed'
+
   createdAt DateTime @default(now())
 }
 

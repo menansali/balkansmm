@@ -7,17 +7,17 @@ export class PaymentsController {
     constructor(private readonly paymentsService: PaymentsService) { }
 
     @Post('webhook')
-    async handleWebhook(@Body() body: { userId: number; amount: number; secret: string }) {
+    async handleWebhook(@Body() body: { userId: number; amount: number; secret: string; txId?: string }) {
         if (!body.userId || !body.amount || !body.secret) {
             throw new BadRequestException('Missing parameters');
         }
         // Usually webhook data comes from provider (Coinbase), but we simulate it
-        return this.paymentsService.processWebhook(body.userId, body.amount, body.secret);
+        return this.paymentsService.processWebhook(body.userId, body.amount, body.secret, body.txId);
     }
 
     @UseGuards(JwtAuthGuard)
-    @Post('mock-deposit')
-    async mockDeposit(@Request() req: any, @Body() body: { amount: number }) {
-        return this.paymentsService.processWebhook(req.user.userId, body.amount, 'my_mock_secret');
+    @Post('deposit')
+    async createDeposit(@Request() req: any, @Body() body: { amount: number; gateway: string }) {
+        return this.paymentsService.createDeposit(req.user.userId, body.amount, body.gateway || 'mock');
     }
 }

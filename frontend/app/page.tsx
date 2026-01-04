@@ -1,75 +1,13 @@
 'use client';
 import Link from 'next/link';
-import { ArrowRight, Zap, Shield, TrendingUp, Globe, CreditCard, Users, Menu, X } from 'lucide-react'; // Added Menu, X
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
-
-// Navbar Component
-function LandingNavbar() {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <nav className="fixed w-full z-50 top-0 left-0 p-4 md:p-6">
-      <div className="max-w-5xl mx-auto h-16 rounded-full glass-card px-6 md:px-8 flex items-center justify-between bg-black/40 backdrop-blur-xl border border-white/10 relative z-50">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-ruby-500 shadow-[0_0_10px_#9f1239]"></div>
-          <span className="font-sans font-bold tracking-tight text-lg">BALKAN<span className="text-gray-400 font-light">SMM</span></span>
-        </div>
-
-        {/* Desktop Links */}
-        <div className="hidden md:flex items-center gap-8 text-sm font-light text-gray-300">
-          <Link href="/services" className="hover:text-white transition-colors">Services</Link>
-          <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
-          <Link href="/api" className="hover:text-white transition-colors">API</Link>
-          <Link href="/support" className="hover:text-white transition-colors">Support</Link>
-        </div>
-
-        {/* Desktop Buttons */}
-        <div className="hidden md:flex items-center gap-4">
-          <Link href="/login" className="text-sm font-medium text-gray-300 hover:text-white transition-colors px-2">
-            Login
-          </Link>
-          <Link href="/register" className="px-6 py-2 rounded-full bg-white text-black hover:bg-gray-200 transition-all font-medium text-sm">
-            Get Started
-          </Link>
-        </div>
-
-        {/* Mobile Menu Toggle */}
-        <button className="md:hidden text-white" onClick={() => setIsOpen(!isOpen)}>
-          {isOpen ? <X /> : <Menu />}
-        </button>
-      </div>
-
-      {/* Mobile Dropdown */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="absolute top-20 left-4 right-4 bg-black/90 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 flex flex-col gap-4 md:hidden shadow-2xl z-40"
-          >
-            <Link href="/services" className="text-lg font-medium text-gray-200">Services</Link>
-            <Link href="/blog" className="text-lg font-medium text-gray-200">Blog</Link>
-            <Link href="/api" className="text-lg font-medium text-gray-200">API</Link>
-            <Link href="/support" className="text-lg font-medium text-gray-200">Support</Link>
-            <hr className="border-white/10" />
-            <div className="flex gap-4">
-              <Link href="/login" className="flex-1 py-3 text-center rounded-xl bg-white/5 border border-white/5 font-bold">Login</Link>
-              <Link href="/register" className="flex-1 py-3 text-center rounded-xl bg-white text-black font-bold">Get Started</Link>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </nav>
-  );
-}
+import { ArrowRight, Zap, Shield, TrendingUp, Globe, CreditCard, Users } from 'lucide-react';
+import { motion } from 'framer-motion';
+import LandingNavbar from '@/components/LandingNavbar';
 
 export default function Home() {
   return (
     <main className="min-h-screen aurora-bg text-white overflow-x-hidden selection:bg-ruby-500/30 selection:text-ruby-200">
 
-      {/* Navbar to be extracted ideally, but inline for now */}
       <LandingNavbar />
 
       {/* Hero Section */}
@@ -144,7 +82,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Hover Effect Overlay */}
+            {/* Hover Effect OVerlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50"></div>
             <div className="absolute bottom-10 left-0 right-0 text-center">
               <span className="px-4 py-2 rounded-full bg-white/10 border border-white/10 backdrop-blur-md text-sm font-medium">
@@ -180,7 +118,7 @@ export default function Home() {
             <FeatureCard
               title="AI Virality"
               desc="Analyze your content before you boost it. Our AI suggests the perfect package."
-              icon={Zap} // Reusing Zap, ideally Wand2 but need import
+              icon={Zap}
             />
             <FeatureCard
               title="Drip-Feed & Refill"
@@ -218,9 +156,9 @@ export default function Home() {
             © 2026 BalkanSMM.
           </div>
           <div className="flex gap-8 text-sm font-light text-gray-500">
-            <Link href="#" className="hover:text-white transition-colors">Terms</Link>
-            <Link href="#" className="hover:text-white transition-colors">Privacy</Link>
-            <Link href="#" className="hover:text-white transition-colors">Status</Link>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+            <Link href="/status" className="hover:text-white transition-colors">Status</Link>
           </div>
         </div>
       </footer>
