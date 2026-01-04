@@ -198,6 +198,34 @@ export class OrdersService {
     return { data: orders, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
+  async refillOrder(userId: number, orderId: number) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId, userId },
+      include: { service: true }
+    });
+
+    if (!order) throw new BadRequestException('Order not found');
+    if (!order.providerOrderId) throw new BadRequestException('Order cannot be refilled');
+
+    const provider = order.provider === 'morethanpanel' ? this.moreThanPanel : this.justAnotherPanel;
+
+    try {
+      const response = await provider.refill(order.providerOrderId);
+      if (response.error) throw new BadRequestException(response.error);
+
+      // Update status
+      await this.prisma.order.update({
+        where: { id: orderId },
+        data: { refillStatus: 'Pending' }
+      });
+
+      return { success: true, response };
+    } catch (e) {
+      this.logger.error(`Refill failed for ${orderId}`, e);
+      throw new BadRequestException('Refill failed on provider side');
+    }
+  }
+
   findOne(id: number) {
     return this.prisma.order.findUnique({ where: { id } });
   }

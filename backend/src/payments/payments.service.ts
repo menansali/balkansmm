@@ -1,5 +1,6 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import axios from 'axios';
 
 @Injectable()
 export class PaymentsService {
@@ -8,25 +9,69 @@ export class PaymentsService {
     constructor(private prisma: PrismaService) { }
 
     async createDeposit(userId: number, amount: number, gateway: string) {
-        // 1. Create a Pending Transaction
+        if (gateway === 'coinbase') {
+            const apiKey = process.env.COINBASE_API_KEY;
+
+            if (!apiKey) this.logger.warn('COINBASE_API_KEY missing');
+
+            try {
+                const chargeData = {
+                    name: 'BalkanSMM Fund Deposit',
+                    description: `Deposit for User #${userId}`,
+                    local_price: { amount: amount.toString(), currency: 'USD' },
+                    pricing_type: 'fixed_price',
+                    metadata: { userId: userId.toString() },
+                    redirect_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard`,
+                    cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard/add-funds`,
+                };
+
+                const response = await axios.post('https://api.commerce.coinbase.com/charges', chargeData, {
+                    headers: {
+                        'X-CC-Api-Key': apiKey,
+                        'X-CC-Version': '2018-03-22',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const tx = await this.prisma.transaction.create({
+                    data: {
+                        userId,
+                        amount,
+                        type: 'deposit',
+                        gateway: 'coinbase',
+                        gatewayTxId: response.data.data.code,
+                        gatewayStatus: 'pending'
+                    }
+                });
+
+                return {
+                    transactionId: tx.id,
+                    gatewayUrl: response.data.data.hosted_url,
+                    gatewayTxId: tx.gatewayTxId
+                };
+            } catch (e: any) {
+                this.logger.error('Coinbase Charge Creation Failed', e?.response?.data || e.message);
+                if (process.env.NODE_ENV === 'production') throw new BadRequestException('Payment gateway error');
+            }
+        }
+
+        // Mock Fallback (for testing / manual)
         const tx = await this.prisma.transaction.create({
             data: {
                 userId,
                 amount,
                 type: 'deposit',
-                gateway,
+                gateway: gateway || 'mock',
                 gatewayStatus: 'pending',
-                gatewayTxId: `TX_${Date.now()}_${Math.floor(Math.random() * 1000)}` // Mock external ID
+                gatewayTxId: `TX_${Date.now()}_${Math.floor(Math.random() * 1000)}`
             }
         });
 
-        // 2. Return Check-out URL (or mock payload)
-        // In real life, you call Coinbase/Stripe API here.
-        this.logger.log(`Created deposit intent for User ${userId}: $${amount} via ${gateway}`);
+        this.logger.log(`Created mock deposit for User ${userId}: $${amount}`);
 
         return {
             transactionId: tx.id,
-            gatewayUrl: `http://localhost:3000/dashboard/add-funds/process?tx=${tx.gatewayTxId}&amount=${amount}`,
+            gatewayUrl: `http://localhost:3000/dashboard/add-funds?mock_success=true&amount=${amount}`,
             gatewayTxId: tx.gatewayTxId
         };
     }
@@ -60,9 +105,6 @@ export class PaymentsService {
                 where: { id: userId },
                 data: { balance: { increment: amount } }
             });
-
-            // If no Tx existed (manual hook?), create one? 
-            // Better to assume createDeposit was called properly.
 
             return { success: true, newBalance: user.balance };
         });

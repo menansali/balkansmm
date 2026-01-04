@@ -29,15 +29,12 @@ export default function OrdersPage() {
     };
 
     const handleRefill = async (orderId: number) => {
-        // Mock Refill for now (Backend logic for provider API sync pending)
-        toast.promise(
-            new Promise(resolve => setTimeout(resolve, 1000)),
-            {
-                loading: 'Requesting refill...',
-                success: 'Refill queued successfully!',
-                error: 'Failed to request refill'
-            }
-        );
+        const promise = api.post(`/orders/${orderId}/refill`);
+        toast.promise(promise, {
+            loading: 'Requesting refill from provider...',
+            success: 'Refill queued successfully!',
+            error: (err) => err.response?.data?.message || 'Refill failed'
+        });
     };
 
     return (

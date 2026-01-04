@@ -2,25 +2,37 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const EVENTS = [
-    { text: 'New order from Belgrade: 5,000 TikTok Views', time: 'Just now' },
-    { text: 'Order #10292 completed successfully', time: '2s ago' },
-    { text: 'New user registered from Sarajevo', time: '5s ago' },
-    { text: 'Order #10291 started processing', time: '12s ago' },
-    { text: 'New deposit: $50.00 via Crypto', time: '25s ago' },
-    { text: 'Service update: Instagram Likes price dropped', time: '1m ago' },
-    { text: 'New order from Zagreb: 10k IG Followers', time: '1m ago' },
-];
-
 export default function LiveActivityTicker() {
+    const [events, setEvents] = useState<{ text: string, time: string }[]>([]);
     const [index, setIndex] = useState(0);
 
     useEffect(() => {
+        // Initial Fetch
+        const fetchEvents = () => {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+            fetch(`${apiUrl}/activity`)
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data) && data.length > 0) setEvents(data);
+                })
+                .catch(err => console.error('Stats error', err));
+        };
+        fetchEvents();
+
+        // Poll every 30s
+        const poll = setInterval(fetchEvents, 30000);
+        return () => clearInterval(poll);
+    }, []);
+
+    useEffect(() => {
+        if (events.length === 0) return;
         const interval = setInterval(() => {
-            setIndex((prev) => (prev + 1) % EVENTS.length);
+            setIndex((prev) => (prev + 1) % events.length);
         }, 4000);
         return () => clearInterval(interval);
-    }, []);
+    }, [events]);
+
+    if (events.length === 0) return null;
 
     return (
         <div className="fixed bottom-6 right-6 z-50 pointer-events-none">
@@ -35,8 +47,8 @@ export default function LiveActivityTicker() {
                 >
                     <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                     <div>
-                        <div className="text-xs font-bold text-white max-w-[200px] truncate">{EVENTS[index].text}</div>
-                        <div className="text-[10px] text-gray-400">{EVENTS[index].time}</div>
+                        <div className="text-xs font-bold text-white max-w-[200px] truncate">{events[index]?.text}</div>
+                        <div className="text-[10px] text-gray-400">{events[index]?.time}</div>
                     </div>
                 </motion.div>
             </AnimatePresence>

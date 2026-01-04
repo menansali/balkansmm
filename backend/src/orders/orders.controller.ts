@@ -22,4 +22,9 @@ export class OrdersController {
   findOne(@Param('id') id: string) {
     return this.ordersService.findOne(+id);
   }
+
+  @Post(':id/refill')
+  refill(@Request() req: any, @Param('id') id: string) {
+    return this.ordersService.refillOrder(req.user.userId, +id);
+  }
 }
