@@ -20,8 +20,8 @@ export default function DashboardPage() {
                 const res = await api.get('/auth/profile');
                 setStats({
                     balance: res.data.balance,
-                    orders: 5,
-                    spent: 0
+                    orders: res.data._count?.orders || 0,
+                    spent: res.data.totalSpent || 0
                 });
             } catch (error) {
                 console.error("Failed to fetch profile", error);

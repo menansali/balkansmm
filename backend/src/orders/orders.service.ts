@@ -147,7 +147,10 @@ export class OrdersService {
       // Deduct balance
       await tx.user.update({
         where: { id: userId },
-        data: { balance: { decrement: charge } },
+        data: {
+          balance: { decrement: charge },
+          totalSpent: { increment: charge }
+        },
       });
 
       // Create Order
