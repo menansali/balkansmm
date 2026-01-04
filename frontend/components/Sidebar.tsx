@@ -46,9 +46,12 @@ export default function Sidebar() {
                 }
                 // Update storage to stay in sync
                 localStorage.setItem('user', JSON.stringify(res.data));
-            } catch (error) {
-                // If token invalid, maybe logout? Or just ignore for sidebar
-                console.error("Role verification failed", error);
+            } catch (error: any) {
+                if (error.response?.status === 401) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.href = '/login';
+                }
             }
         };
         verifyRole();
