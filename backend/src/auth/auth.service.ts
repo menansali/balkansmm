@@ -102,6 +102,8 @@ export class AuthService {
       }
     });
 
+    this.mailService.sendWelcome(newUser.email);
+
     const { password, ...result } = newUser;
     return result;
   }
