@@ -106,6 +106,16 @@ export class PaymentsService {
                 data: { balance: { increment: amount } }
             });
 
+            // Affiliate Commission (10%)
+            if (user.referredById) {
+                const commission = amount * 0.10;
+                await tx.user.update({
+                    where: { id: user.referredById },
+                    data: { affiliateBalance: { increment: commission } }
+                });
+                this.logger.log(`Affiliate commission $${commission} credited to referrer ${user.referredById}`);
+            }
+
             return { success: true, newBalance: user.balance };
         });
     }
