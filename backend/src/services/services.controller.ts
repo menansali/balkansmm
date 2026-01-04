@@ -9,7 +9,9 @@ export class ServicesController {
   constructor(private readonly servicesService: ServicesService) { }
 
   @Post()
-  create(@Body() createServiceDto: CreateServiceDto) {
+  @UseGuards(JwtAuthGuard)
+  create(@Request() req: any, @Body() createServiceDto: CreateServiceDto) {
+    if (req.user.role !== 'admin') throw new ForbiddenException('Admin only');
     return this.servicesService.create(createServiceDto);
   }
 
@@ -21,10 +23,7 @@ export class ServicesController {
   @UseGuards(JwtAuthGuard)
   @Get('admin')
   async findAllAdmin(@Request() req: any) {
-    // Check if user is admin
-    if (req.user.role !== 'admin') {
-      throw new ForbiddenException('Admin access required'); // Ensure usage of ForbiddenException
-    }
+    if (req.user.role !== 'admin') throw new ForbiddenException('Admin access required');
     return this.servicesService.findAllAdmin();
   }
 
@@ -33,14 +32,17 @@ export class ServicesController {
     return this.servicesService.fetchMetadata(link);
   }
 
-  // Admin only - simplified security for demo
   @Post('margin')
-  async setMargin(@Body('percentage') percentage: number) {
+  @UseGuards(JwtAuthGuard)
+  async setMargin(@Request() req: any, @Body('percentage') percentage: number) {
+    if (req.user.role !== 'admin') throw new ForbiddenException('Admin only');
     return this.servicesService.updateGlobalMargin(percentage);
   }
 
   @Post('sync')
-  async sync(@Body() body: { provider: 'justanotherpanel' | 'morethanpanel', margin: number }) {
+  @UseGuards(JwtAuthGuard)
+  async sync(@Request() req: any, @Body() body: { provider: 'justanotherpanel' | 'morethanpanel', margin: number }) {
+    if (req.user.role !== 'admin') throw new ForbiddenException('Admin only');
     return this.servicesService.syncServices(body.provider, body.margin);
   }
 
@@ -50,12 +52,16 @@ export class ServicesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateServiceDto: UpdateServiceDto) {
+  @UseGuards(JwtAuthGuard)
+  update(@Request() req: any, @Param('id') id: string, @Body() updateServiceDto: UpdateServiceDto) {
+    if (req.user.role !== 'admin') throw new ForbiddenException('Admin only');
     return this.servicesService.update(+id, updateServiceDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  @UseGuards(JwtAuthGuard)
+  remove(@Request() req: any, @Param('id') id: string) {
+    if (req.user.role !== 'admin') throw new ForbiddenException('Admin only');
     return this.servicesService.remove(+id);
   }
 }

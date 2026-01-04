@@ -149,6 +149,23 @@ export default function Home() {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <section className="py-20 px-6 border-t border-white/5 bg-black/20">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-light mb-4">Frequently Asked Questions</h2>
+            <p className="text-gray-500">Everything you need to know about BalkanSMM.</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <FAQItem q="Is it safe for my account?" a="Yes. We use high-quality profiles and natural delivery patterns (drip-feed) to ensure your account remains 100% safe." />
+            <FAQItem q="How do I deposit funds?" a="We accept major Cryptocurrencies via Coinbase Commerce. PayPal is available for verified bulk resellers only." />
+            <FAQItem q="What if my followers drop?" a="Many of our services come with a 30-day Refill Button. Just click it in your dashboard to restore any lost followers." />
+            <FAQItem q="Can I resell your services?" a="Absolutely. We provide a robust API that allows you to connect your own SMM panel and resell our services for a profit." />
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="border-t border-white/5 py-12 px-6 bg-black">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
@@ -193,5 +210,14 @@ function FeatureCard({ title, desc, icon: Icon }: { title: string, desc: string,
         {desc}
       </p>
     </motion.div>
+  );
+}
+
+function FAQItem({ q, a }: { q: string, a: string }) {
+  return (
+    <div className="p-6 rounded-2xl bg-white/5 border border-white/5 hover:border-ruby-500/30 transition-colors">
+      <h3 className="font-medium text-lg mb-2 text-gray-200">{q}</h3>
+      <p className="text-gray-500 text-sm leading-relaxed">{a}</p>
+    </div>
   );
 }
