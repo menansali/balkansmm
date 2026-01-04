@@ -10,6 +10,21 @@ export default function Home() {
 
       <LandingNavbar />
 
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "BalkanSMM",
+            "url": "https://balkansmm.com",
+            "logo": "https://balkansmm.com/favicon.ico",
+            "description": "The #1 SMM Panel for Instagram, TikTok, and YouTube growth.",
+            "sameAs": ["https://twitter.com/balkansmm"]
+          })
+        }}
+      />
+
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-6 flex flex-col items-center text-center overflow-hidden">
         {/* Background Gradients */}
