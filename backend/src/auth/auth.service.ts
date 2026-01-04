@@ -107,4 +107,10 @@ export class AuthService {
     const { password, ...result } = newUser;
     return result;
   }
+
+  async impersonate(userId: number) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new BadRequestException('User not found');
+    return this.login(user);
+  }
 }

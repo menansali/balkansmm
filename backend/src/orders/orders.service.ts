@@ -114,6 +114,7 @@ export class OrdersService {
 
     // 2. Calculate Cost
     const charge = (service.rate * createOrderDto.quantity) / 1000;
+    const cost = service.providerRate ? (service.providerRate * createOrderDto.quantity) / 1000 : 0;
 
     // 3. Check Balance
     if (user.balance < charge) {
@@ -138,10 +139,6 @@ export class OrdersService {
     }
 
     if (!providerResponse.order) {
-      // Some APIs return { order: 123 }, others { order: "123" }
-      // Fallback for mock if API fails in dev mode, but strictly we should fail.
-      // For now, if we are in dev and no keys, we might want to fail or mock.
-      // Assuming production readiness:
       throw new BadRequestException('Failed to place order with provider');
     }
 
@@ -161,6 +158,7 @@ export class OrdersService {
           link: createOrderDto.link,
           quantity: createOrderDto.quantity,
           charge,
+          cost,
           provider: service.provider,
           providerOrderId: providerResponse.order.toString(),
           status: 'pending',

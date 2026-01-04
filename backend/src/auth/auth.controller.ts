@@ -1,4 +1,4 @@
-import { Controller, Request, Post, UseGuards, Get, Body, Res } from '@nestjs/common';
+import { Controller, Request, Post, UseGuards, Get, Body, Res, Param, ForbiddenException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service'; // Import
@@ -45,5 +45,12 @@ export class AuthController {
     const result = await this.authService.login(req.user);
     // In production, use environment variable for frontend URL
     res.redirect(`http://localhost:3000/login?token=${result.access_token}`);
+  }
+
+  @Post('impersonate/:id')
+  @UseGuards(AuthGuard('jwt'))
+  async impersonate(@Request() req: any, @Param('id') id: string) {
+    if (req.user.role !== 'admin') throw new ForbiddenException('Admin Only');
+    return this.authService.impersonate(+id);
   }
 }
