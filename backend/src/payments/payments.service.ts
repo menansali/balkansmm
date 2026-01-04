@@ -33,7 +33,7 @@ export class PaymentsService {
                     }
                 });
 
-                const tx = await this.prisma.transaction.create({
+                const tx: any = await this.prisma.transaction.create({
                     data: {
                         userId,
                         amount,
@@ -41,7 +41,7 @@ export class PaymentsService {
                         gateway: 'coinbase',
                         gatewayTxId: response.data.data.code,
                         gatewayStatus: 'pending'
-                    }
+                    } as any
                 });
 
                 return {
@@ -56,7 +56,7 @@ export class PaymentsService {
         }
 
         // Mock Fallback (for testing / manual)
-        const tx = await this.prisma.transaction.create({
+        const tx: any = await this.prisma.transaction.create({
             data: {
                 userId,
                 amount,
@@ -64,7 +64,7 @@ export class PaymentsService {
                 gateway: gateway || 'mock',
                 gatewayStatus: 'pending',
                 gatewayTxId: `TX_${Date.now()}_${Math.floor(Math.random() * 1000)}`
-            }
+            } as any
         });
 
         this.logger.log(`Created mock deposit for User ${userId}: $${amount}`);
@@ -87,7 +87,7 @@ export class PaymentsService {
         return this.prisma.$transaction(async (tx) => {
             // If we have a specific txId (from gateway), update it
             if (txId) {
-                const existingTx = await tx.transaction.findFirst({ where: { gatewayTxId: txId } });
+                const existingTx: any = await tx.transaction.findFirst({ where: { gatewayTxId: txId } } as any);
                 if (existingTx && existingTx.gatewayStatus === 'completed') {
                     return { success: true, message: 'Already processed' };
                 }
@@ -95,7 +95,7 @@ export class PaymentsService {
                 if (existingTx) {
                     await tx.transaction.update({
                         where: { id: existingTx.id },
-                        data: { gatewayStatus: 'completed' }
+                        data: { gatewayStatus: 'completed' } as any
                     });
                 }
             }
