@@ -1,9 +1,10 @@
 'use client';
 import { useState, useEffect, useMemo } from 'react';
-import { ShoppingCart, Check, Zap, Search, Instagram, Facebook, Youtube, Twitter, Music2, Send, Mic, Globe, Layers, Filter, Heart, Users, Eye, MessageCircle, Share2, Bookmark, Radio, PlayCircle } from 'lucide-react';
+import { ShoppingCart, Check, Zap, Search, Instagram, Facebook, Youtube, Twitter, Music2, Send, Mic, Globe, Layers, Filter, Heart, Users, Eye, MessageCircle, Share2, Bookmark, Radio, PlayCircle, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
 import { toast } from 'react-hot-toast';
+import { useConfetti } from '@/components/ConfettiCelebration';
 
 // Platform Definitions
 const PLATFORMS = [
@@ -32,7 +33,7 @@ const SERVICE_TYPES = [
 export default function NewOrderPage() {
     const [allServices, setAllServices] = useState<any[]>([]);
     const [selectedPlatform, setSelectedPlatform] = useState('instagram');
-    const [selectedType, setSelectedType] = useState('All'); // NEW: Sub-category filter
+    const [selectedType, setSelectedType] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedService, setSelectedService] = useState<any>(null);
     const [link, setLink] = useState('');
@@ -42,6 +43,8 @@ export default function NewOrderPage() {
     const [dripFeed, setDripFeed] = useState(false);
     const [runs, setRuns] = useState<number>(0);
     const [interval, setInterval] = useState<number>(0);
+
+    const { sideCanons } = useConfetti();
 
     useEffect(() => {
         const fetchServices = async () => {
@@ -141,7 +144,8 @@ export default function NewOrderPage() {
                 interval: dripFeed ? Number(interval) : null
             });
             setStatus('success');
-            toast.success("Order placed successfully!");
+            toast.success("Order placed successfully! 🎉");
+            sideCanons();
             setTimeout(() => setStatus('idle'), 3000);
             setLink('');
             setQuantity(0);

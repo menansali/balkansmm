@@ -1,9 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  /* Ruby Theme & Dark Void Palette */
+  /* Dark Mode (Default) */
   --background: #000000;
   --foreground: #ffffff;
+  --card-bg: rgba(255, 255, 255, 0.015);
+  --card-border: rgba(255, 255, 255, 0.06);
+  --text-primary: #ffffff;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
 
   --ruby-500: #E0115F;
   --ruby-600: #C21E56;
@@ -16,6 +21,26 @@
 
   --aurora-blue: #4c1d95;
   --aurora-ruby: #9f1239;
+}
+
+/* Light Mode */
+.light {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card-bg: rgba(255, 255, 255, 0.9);
+  --card-border: rgba(0, 0, 0, 0.08);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  --ruby-500: #E0115F;
+  --ruby-600: #C21E56;
+  --ruby-700: #A01040;
+  --ruby-800: #800020;
+  --ruby-900: #500010;
+
+  --aurora-blue: #c4b5fd;
+  --aurora-ruby: #fecdd3;
 }
 
 @layer utilities {
@@ -32,26 +57,45 @@
   }
 }
 
-/* Designy-style Aurora Background */
-.aurora-bg {
+/* Dark Mode Aurora Background */
+.dark .aurora-bg,
+:root:not(.light) .aurora-bg {
   background-color: #000000;
   min-height: 100vh;
   background-image:
     radial-gradient(circle at 10% 20%, rgba(76, 29, 149, 0.25) 0%, transparent 40%),
-    /* Blue/Violet Top Left */
     radial-gradient(circle at 90% 10%, rgba(159, 18, 57, 0.20) 0%, transparent 40%),
-    /* Red/Ruby Top Right */
     radial-gradient(circle at 50% 50%, rgba(200, 200, 255, 0.03) 0%, transparent 60%);
-  /* Subtle center glow */
   background-attachment: fixed;
 }
 
-.glass-card {
+/* Light Mode Aurora Background */
+.light .aurora-bg {
+  background-color: #f8fafc;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(196, 181, 253, 0.4) 0%, transparent 40%),
+    radial-gradient(circle at 90% 10%, rgba(254, 205, 211, 0.4) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.5) 0%, transparent 60%);
+  background-attachment: fixed;
+}
+
+/* Glass Cards */
+.dark .glass-card,
+:root:not(.light) .glass-card {
   background: rgba(255, 255, 255, 0.015);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.light .glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
 }
 
 .shimmer-text {
@@ -87,4 +131,103 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-jost), sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Light mode text colors */
+.light {
+  color: var(--foreground);
+}
+
+.light .text-white {
+  color: var(--text-primary);
+}
+
+.light .text-gray-400 {
+  color: var(--text-secondary);
+}
+
+.light .text-gray-500 {
+  color: var(--text-muted);
+}
+
+.light .bg-black {
+  background-color: var(--background);
+}
+
+.light .bg-black\/50,
+.light .bg-black\/40,
+.light .bg-black\/30 {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.light .border-white\/10,
+.light .border-white\/5 {
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light .bg-white\/5,
+.light .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.light .hover\:bg-white\/5:hover,
+.light .hover\:bg-white\/10:hover {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+/* Shimmer animation */
+@keyframes shimmer-bg {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.03) 0%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.03) 100%);
+  background-size: 200% 100%;
+  animation: shimmer-bg 1.5s ease-in-out infinite;
+}
+
+.light .animate-shimmer {
+  background: linear-gradient(90deg,
+      rgba(0, 0, 0, 0.03) 0%,
+      rgba(0, 0, 0, 0.08) 50%,
+      rgba(0, 0, 0, 0.03) 100%);
+  background-size: 200% 100%;
+  animation: shimmer-bg 1.5s ease-in-out infinite;
+}
+
+/* Scrollbar styling for dark mode */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.light ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
 }
