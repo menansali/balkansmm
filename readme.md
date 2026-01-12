@@ -15,6 +15,28 @@
 - **Real-Time Dashboard**: Live order tracking, biological wallet system, and instant support tickets.
 - **Responsive Design**: Premium "Glassmorphism" UI optimized for all devices.
 
+### 🔗 Smart Link Analytics *(NEW)*
+- **Profile Tracking**: Monitor Instagram, TikTok, YouTube & Twitter profiles.
+- **Live Growth Charts**: Real-time follower graphs and engagement metrics.
+- **Competitor Comparison**: Compare multiple profiles side-by-side.
+- **Best Posting Times**: AI-powered suggestions for optimal content timing.
+- **Growth Velocity**: Track followers gained per day.
+
+### 📅 AI Content Scheduler *(NEW)*
+- **Calendar View**: Visual content calendar with drag-and-drop scheduling.
+- **AI Caption Generator**: Generate viral captions with tone & hashtag options.
+- **Multi-Platform Support**: Schedule for Instagram, TikTok, and Twitter.
+- **Auto-Boost Integration**: Automatically boost engagement when posts go live.
+- **Post Analytics**: Track performance of scheduled content.
+
+### 🏪 Reseller White-Label System *(NEW)*
+- **Custom Branding**: Your own logo, colors, and store name.
+- **Subdomain Support**: Get your own `yourstore.balkansmm.com` URL.
+- **Custom Domain**: Connect your own domain for full white-labeling.
+- **Price Markup Control**: Set your own profit margins (default 30%).
+- **Customer Management**: Manage your customers, balances, and orders.
+- **Revenue Dashboard**: Track profits, orders, and customer activity.
+
 ### 🛡️ For Admins
 - **Command Center**: Full control over users, orders, and services from a dedicated dashboard.
 - **Broadcast System**: Send global announcements (Info, Warning, Alert) to all connected users instantly.

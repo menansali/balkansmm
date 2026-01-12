@@ -34,6 +34,11 @@ model User {
   orders           Order[]
   transactions     Transaction[]
   tickets          Ticket[]
+  
+  // New Features
+  trackedProfiles  TrackedProfile[]
+  scheduledPosts   ScheduledPost[]
+  resellerStore    ResellerStore?
 }
 
 model Service {
@@ -122,4 +127,170 @@ model Announcement {
   type      String   @default("info")
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
+}
+
+// ============================================
+// HAPPY HOUR SYSTEM
+// ============================================
+model HappyHour {
+  id              Int       @id @default(autoincrement())
+  name            String
+  discountPercent Float     // e.g., 50 for 50% off
+  categories      String[]  // Which service categories to discount (empty = all)
+  platforms       String[]  // instagram, tiktok, etc. (empty = all)
+  startTime       DateTime
+  endTime         DateTime
+  isActive        Boolean   @default(true)
+  isRecurring     Boolean   @default(false)
+  recurringDays   Int[]     // 0=Sunday, 1=Monday, etc.
+  recurringStart  String?   // "14:00" for 2 PM
+  recurringEnd    String?   // "16:00" for 4 PM
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+// ============================================
+// SYSTEM SETTINGS
+// ============================================
+model SystemSetting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================
+// FEATURE 1: SMART LINK ANALYTICS
+// ============================================
+model TrackedProfile {
+  id          Int      @id @default(autoincrement())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+  platform    String   // instagram, tiktok, youtube, twitter
+  username    String
+  profileUrl  String
+  avatarUrl   String?
+  isActive    Boolean  @default(true)
+  snapshots   AnalyticsSnapshot[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, platform, username])
+}
+
+model AnalyticsSnapshot {
+  id              Int      @id @default(autoincrement())
+  profile         TrackedProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId       Int
+  followers       Int
+  following       Int?
+  posts           Int?
+  engagementRate  Float?
+  avgLikes        Int?
+  avgComments     Int?
+  avgViews        Int?
+  createdAt       DateTime @default(now())
+}
+
+// ============================================
+// FEATURE 2: AI CONTENT SCHEDULER
+// ============================================
+model ScheduledPost {
+  id              Int      @id @default(autoincrement())
+  user            User     @relation(fields: [userId], references: [id])
+  userId          Int
+  platform        String   // instagram, tiktok, twitter
+  postType        String   // image, video, carousel, story
+  caption         String
+  mediaUrls       String[] // Array of media URLs
+  hashtags        String[]
+  scheduledAt     DateTime
+  timezone        String   @default("UTC")
+  status          String   @default("scheduled") // scheduled, published, failed, cancelled
+  publishedAt     DateTime?
+  errorMessage    String?
+  
+  // Auto-boost settings
+  autoBoost       Boolean  @default(false)
+  boostServiceId  Int?
+  boostQuantity   Int?
+  boostOrderId    Int?
+  
+  // AI Generated
+  aiGenerated     Boolean  @default(false)
+  aiPrompt        String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ============================================
+// FEATURE 3: RESELLER WHITE-LABEL SYSTEM
+// ============================================
+model ResellerStore {
+  id              Int      @id @default(autoincrement())
+  owner           User     @relation(fields: [ownerId], references: [id])
+  ownerId         Int      @unique
+  
+  // Branding
+  storeName       String
+  storeSlug       String   @unique // subdomain: {slug}.balkansmm.com
+  customDomain    String?  @unique // reseller's own domain
+  logoUrl         String?
+  primaryColor    String   @default("#e11d48") // Ruby
+  secondaryColor  String   @default("#7c3aed") // Purple
+  
+  // Pricing
+  markupPercent   Float    @default(30.0) // Default 30% markup
+  
+  // Settings
+  isActive        Boolean  @default(true)
+  supportEmail    String?
+  welcomeMessage  String?
+  
+  // Stats
+  totalRevenue    Float    @default(0.0)
+  totalOrders     Int      @default(0)
+  
+  customers       ResellerCustomer[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ResellerCustomer {
+  id              Int      @id @default(autoincrement())
+  store           ResellerStore @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  storeId         Int
+  
+  email           String
+  password        String
+  name            String?
+  balance         Float    @default(0.0)
+  totalSpent      Float    @default(0.0)
+  
+  orders          ResellerOrder[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([storeId, email])
+}
+
+model ResellerOrder {
+  id              Int      @id @default(autoincrement())
+  customer        ResellerCustomer @relation(fields: [customerId], references: [id])
+  customerId      Int
+  
+  serviceId       Int
+  link            String
+  quantity        Int
+  charge          Float    // What the reseller charged
+  cost            Float    // What it cost the reseller
+  profit          Float    // charge - cost
+  status          String   @default("Pending")
+  
+  // Linked to main order
+  mainOrderId     Int?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
