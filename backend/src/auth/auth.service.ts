@@ -70,7 +70,7 @@ export class AuthService {
     });
 
     // 2. Send Welcome Email
-    this.mailService.sendWelcome(newUser.email);
+    await this.mailService.sendWelcome(newUser.email);
 
     // 3. Auto-Login
     return this.login(newUser);
@@ -102,7 +102,7 @@ export class AuthService {
       }
     });
 
-    this.mailService.sendWelcome(newUser.email);
+    await this.mailService.sendWelcome(newUser.email);
 
     const { password, ...result } = newUser;
     return result;

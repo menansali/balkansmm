@@ -11,9 +11,8 @@ export class AdminService {
         const totalOrders = await this.prisma.order.count();
 
         // 2. Revenue (Total Charge)
-        const revenueAgg = await this.prisma.order.aggregate({
-            _sum: { charge: true }
-        });
+        // 2. Revenue (Total Charge)
+        // Combined with financialAgg below to avoid double query
 
         // 3. Profit Logic (Charge - Cost)
         // We only calculate mostly on Completed orders to be safe, but profit is profit once charged?
@@ -60,13 +59,13 @@ export class AdminService {
     // --- Announcements ---
 
     async createAnnouncement(message: string, type: string) {
-        return (this.prisma as any).announcement.create({
+        return await (this.prisma as any).announcement.create({
             data: { message, type }
         });
     }
 
     async deleteAnnouncement(id: number) {
-        return (this.prisma as any).announcement.delete({
+        return await (this.prisma as any).announcement.delete({
             where: { id }
         });
     }

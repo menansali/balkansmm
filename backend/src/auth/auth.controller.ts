@@ -13,7 +13,8 @@ export class AuthController {
 
   @UseGuards(AuthGuard('local'))
   @Post('login')
-  async login(@Request() req: any) {
+  @Post('login')
+  async login(@Request() req: { user: any }) {
     return this.authService.login(req.user);
   }
 
@@ -24,12 +25,13 @@ export class AuthController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')
-  async getProfile(@Request() req: any) {
+  async getProfile(@Request() req: { user: { userId?: number; id?: number } }) {
     // req.user has { userId, ... } from JwtStrategy, or { id, ... } depending on implementation.
     // Let's check JwtStrategy. Usually it maps 'sub' -> 'userId'.
     // If local.strategy, it returns full user.
     // Assuming jwt strategy is active here.
     const userId = req.user.userId || req.user.id;
+    if (!userId) throw new ForbiddenException('Invalid token payload');
     return this.usersService.findOne(userId);
   }
 
@@ -49,7 +51,7 @@ export class AuthController {
 
   @Post('impersonate/:id')
   @UseGuards(AuthGuard('jwt'))
-  async impersonate(@Request() req: any, @Param('id') id: string) {
+  async impersonate(@Request() req: { user: { role: string } }, @Param('id') id: string) {
     if (req.user.role !== 'admin') throw new ForbiddenException('Admin Only');
     return this.authService.impersonate(+id);
   }
