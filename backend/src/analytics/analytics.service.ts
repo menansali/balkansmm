@@ -15,6 +15,14 @@ interface ProfileData {
     avatarUrl?: string;
 }
 
+interface Snapshot {
+    createdAt: Date;
+    followers: number;
+    engagementRate?: number | null;
+    avgLikes?: number | null;
+    avgComments?: number | null;
+}
+
 @Injectable()
 export class AnalyticsService {
     constructor(
@@ -313,7 +321,7 @@ export class AnalyticsService {
         return Math.floor(totalLikes / posts.length);
     }
 
-    private calculateBestPostingTimes(snapshots: any[]): string[] {
+    private calculateBestPostingTimes(snapshots: Snapshot[]): string[] {
         if (snapshots.length < 7) {
             return ['9:00 AM', '12:00 PM', '7:00 PM', '9:00 PM'];
         }
@@ -344,7 +352,7 @@ export class AnalyticsService {
         return `${displayHour}:00 ${period}`;
     }
 
-    private calculateGrowthVelocity(snapshots: any[]): number {
+    private calculateGrowthVelocity(snapshots: Snapshot[]): number {
         if (snapshots.length < 2) return 0;
         const first = snapshots[0];
         const last = snapshots[snapshots.length - 1];
@@ -355,7 +363,7 @@ export class AnalyticsService {
         return days > 0 ? Math.floor((last.followers - first.followers) / days) : 0;
     }
 
-    private calculateGrowthPercent(snapshots: any[]): number {
+    private calculateGrowthPercent(snapshots: Snapshot[]): number {
         if (snapshots.length < 2) return 0;
         const latest = snapshots[0];
         const previous = snapshots[snapshots.length - 1];
