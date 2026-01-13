@@ -69,7 +69,7 @@ export function SkeletonGraph() {
                     <motion.div
                         key={i}
                         initial={{ height: 0 }}
-                        animate={{ height: `${Math.random() * 80 + 20}%` }}
+                        animate={{ height: `${((i * 37) % 60) + 20}%` }}
                         transition={{ duration: 0.5, delay: i * 0.05 }}
                         className="flex-1 bg-gradient-to-t from-white/10 to-white/5 rounded-t"
                     />

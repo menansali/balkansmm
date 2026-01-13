@@ -6,6 +6,7 @@ import { Home, List, PlusCircle, Settings, Box, LifeBuoy, DollarSign, LogOut, Us
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
 import api from '../lib/api';
+import { useTheme } from '../context/ThemeContext';
 
 const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
@@ -27,20 +28,8 @@ export default function Sidebar() {
     const pathname = usePathname();
     const [isAdmin, setIsAdmin] = useState(false);
     const [userProfile, setUserProfile] = useState<any>(null);
-    const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+    const { theme } = useTheme();
     const isActive = (path: string) => pathname === path;
-
-    useEffect(() => {
-        const stored = localStorage.getItem('theme') as 'dark' | 'light';
-        if (stored) setTheme(stored);
-
-        const observer = new MutationObserver(() => {
-            const isLight = document.documentElement.classList.contains('light');
-            setTheme(isLight ? 'light' : 'dark');
-        });
-        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-        return () => observer.disconnect();
-    }, []);
 
     const isDark = theme === 'dark';
 

@@ -19,6 +19,7 @@ import {
     Sparkles,
     Rocket,
 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import api from '@/lib/api';
 
 interface ScheduledPost {
@@ -129,8 +130,9 @@ export default function SchedulerPage() {
             await fetchCalendar();
             setShowCreateModal(false);
             resetForm();
+            toast.success('Post scheduled successfully!');
         } catch (error: any) {
-            alert(error.response?.data?.message || 'Failed to schedule post');
+            toast.error(error.response?.data?.message || 'Failed to schedule post');
         } finally {
             setCreating(false);
         }
@@ -263,10 +265,10 @@ export default function SchedulerPage() {
                                 key={index}
                                 onClick={() => day && setSelectedDay(selectedDay === day ? null : day)}
                                 className={`min-h-24 p-2 rounded-xl border transition-all cursor-pointer ${day
-                                        ? selectedDay === day
-                                            ? 'border-purple-500 bg-purple-500/10'
-                                            : 'border-white/5 hover:border-white/20'
-                                        : 'border-transparent'
+                                    ? selectedDay === day
+                                        ? 'border-purple-500 bg-purple-500/10'
+                                        : 'border-white/5 hover:border-white/20'
+                                    : 'border-transparent'
                                     } ${isToday ? 'bg-purple-500/20' : ''}`}
                             >
                                 {day && (
@@ -420,8 +422,8 @@ export default function SchedulerPage() {
                                                     key={p}
                                                     onClick={() => setNewPost({ ...newPost, platform: p })}
                                                     className={`p-4 rounded-xl border transition-all flex items-center justify-center gap-2 ${newPost.platform === p
-                                                            ? 'border-purple-500 bg-purple-500/20'
-                                                            : 'border-white/10 hover:border-white/30'
+                                                        ? 'border-purple-500 bg-purple-500/20'
+                                                        : 'border-white/10 hover:border-white/30'
                                                         }`}
                                                 >
                                                     <Icon size={20} />
@@ -445,8 +447,8 @@ export default function SchedulerPage() {
                                                 key={type}
                                                 onClick={() => setNewPost({ ...newPost, postType: type })}
                                                 className={`p-3 rounded-xl border transition-all flex items-center justify-center gap-2 ${newPost.postType === type
-                                                        ? 'border-purple-500 bg-purple-500/20'
-                                                        : 'border-white/10 hover:border-white/30'
+                                                    ? 'border-purple-500 bg-purple-500/20'
+                                                    : 'border-white/10 hover:border-white/30'
                                                     }`}
                                             >
                                                 <Icon size={16} />

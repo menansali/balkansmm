@@ -36,12 +36,22 @@ export default function NotificationBell() {
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="absolute right-0 top-full mt-2 w-80 bg-black/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 origin-top-right"
                         >
-                            <div className="p-4 border-b border-white/10 flex justify-between items-center">
+                            <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
                                 <h3 className="font-bold text-sm">Notifications</h3>
-                                <span className="text-xs text-gray-500">{unreadCount} unread</span>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-xs text-gray-500">{unreadCount} unread</span>
+                                    {unreadCount > 0 && (
+                                        <button
+                                            onClick={() => notifications.forEach(n => markAsRead(n.id))}
+                                            className="text-[10px] uppercase font-bold text-ruby-400 hover:text-ruby-300 transition-colors"
+                                        >
+                                            Mark all read
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
-                            <div className="max-h-80 overflow-y-auto">
+                            <div className="max-h-80 overflow-y-auto custom-scrollbar">
                                 {notifications.length === 0 ? (
                                     <div className="p-8 text-center text-gray-500 text-sm">
                                         No new notifications

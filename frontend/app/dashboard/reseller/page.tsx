@@ -18,6 +18,7 @@ import {
     CheckCircle,
     AlertCircle,
 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import api from '@/lib/api';
 
 interface ResellerStore {
@@ -113,7 +114,7 @@ export default function ResellerPage() {
             await checkStore();
             setShowCreateModal(false);
         } catch (error: any) {
-            alert(error.response?.data?.message || 'Failed to create store');
+            toast.error(error.response?.data?.message || 'Failed to create store');
         } finally {
             setCreating(false);
         }
@@ -124,9 +125,9 @@ export default function ResellerPage() {
         setSaving(true);
         try {
             await api.put('/reseller/store', store);
-            alert('Settings saved!');
+            toast.success('Settings saved!');
         } catch (error: any) {
-            alert(error.response?.data?.message || 'Failed to save settings');
+            toast.error(error.response?.data?.message || 'Failed to save settings');
         } finally {
             setSaving(false);
         }
@@ -143,13 +144,13 @@ export default function ResellerPage() {
             setAddBalanceAmount('');
             setSelectedCustomer(null);
         } catch (error: any) {
-            alert(error.response?.data?.message || 'Failed to add balance');
+            toast.error(error.response?.data?.message || 'Failed to add balance');
         }
     };
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
-        alert('Copied to clipboard!');
+        toast.success('Copied to clipboard!');
     };
 
     if (loading) {
@@ -345,8 +346,8 @@ export default function ResellerPage() {
                 <div className="flex items-center gap-3">
                     <div
                         className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm ${store?.isActive
-                                ? 'bg-green-500/20 text-green-400'
-                                : 'bg-red-500/20 text-red-400'
+                            ? 'bg-green-500/20 text-green-400'
+                            : 'bg-red-500/20 text-red-400'
                             }`}
                     >
                         {store?.isActive ? <CheckCircle size={14} /> : <AlertCircle size={14} />}
@@ -392,8 +393,8 @@ export default function ResellerPage() {
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
                         className={`flex items-center gap-2 px-6 py-3 border-b-2 transition-colors ${activeTab === tab.id
-                                ? 'border-ruby-500 text-white'
-                                : 'border-transparent text-gray-400 hover:text-white'
+                            ? 'border-ruby-500 text-white'
+                            : 'border-transparent text-gray-400 hover:text-white'
                             }`}
                     >
                         <tab.icon size={16} />

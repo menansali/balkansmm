@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { MessageSquare, Plus, Send, User, Shield, Clock } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import api from '../../../lib/api';
 
 type Message = {
@@ -76,7 +77,7 @@ export default function SupportPage() {
             setInitialMessage('');
             loadTickets();
         } catch (e) {
-            alert('Failed to create ticket');
+            toast.error('Failed to create ticket');
         }
     };
 
@@ -97,7 +98,7 @@ export default function SupportPage() {
             }]);
             setNewMessage('');
         } catch (e) {
-            alert('Failed to send message');
+            toast.error('Failed to send message');
         }
     };
 

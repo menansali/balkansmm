@@ -188,6 +188,7 @@ export default function Home() {
             © 2026 BalkanSMM.
           </div>
           <div className="flex gap-8 text-sm font-light text-gray-500">
+            <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
             <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
             <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
             <Link href="/status" className="hover:text-white transition-colors">Status</Link>
