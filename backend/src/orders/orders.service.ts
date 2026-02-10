@@ -1,10 +1,9 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
 import { MoreThanPanelProvider } from '../providers/morethanpanel.provider';
 import { JustAnotherPanelProvider } from '../providers/justanotherpanel.provider';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class OrdersService {
@@ -14,7 +13,7 @@ export class OrdersService {
     private prisma: PrismaService,
     private moreThanPanel: MoreThanPanelProvider,
     private justAnotherPanel: JustAnotherPanelProvider,
-  ) { }
+  ) {}
 
   @Cron('*/5 * * * *') // Runs every 5 minutes
   async handleOrderSync() {
@@ -24,26 +23,37 @@ export class OrdersService {
     const activeOrders = await this.prisma.order.findMany({
       where: {
         status: { in: ['Pending', 'Processing', 'In progress'] },
-        providerOrderId: { not: null }
+        providerOrderId: { not: null },
       },
       take: 50, // Batch limit for scalability
       orderBy: { updatedAt: 'asc' }, // Check oldest updates first
-      include: { service: true }
+      include: { service: true },
     });
 
     this.logger.debug(`Found ${activeOrders.length} active orders to sync.`);
 
     for (const order of activeOrders) {
       try {
-        const provider = order.provider === 'morethanpanel' ? this.moreThanPanel : this.justAnotherPanel;
-        const remoteStatus = await provider.getOrderStatus(order.providerOrderId!);
+        const provider =
+          order.provider === 'morethanpanel'
+            ? this.moreThanPanel
+            : this.justAnotherPanel;
+        const remoteStatus = await provider.getOrderStatus(
+          order.providerOrderId!,
+        );
 
         // remoteStatus format: { status: 'Completed', remains: '0', currency: 'USD' }
-        if (remoteStatus && remoteStatus.status) {
-          const newStatus = this.mapStatus(remoteStatus.status); // Normalizing status
+        const status = (remoteStatus as { status?: string; remains?: string })
+          ?.status;
+        if (remoteStatus && status) {
+          const newStatus = this.mapStatus(status); // Normalizing status
 
           if (newStatus !== order.status) {
-            await this.updateOrderStatus(order.id, newStatus, remoteStatus.remains);
+            await this.updateOrderStatus(
+              order.id,
+              newStatus,
+              (remoteStatus as { remains?: string }).remains,
+            );
           }
         }
       } catch (e) {
@@ -64,13 +74,21 @@ export class OrdersService {
     return 'Pending';
   }
 
-  private async updateOrderStatus(orderId: number, status: string, remains?: string) {
+  private async updateOrderStatus(
+    orderId: number,
+    status: string,
+    remains?: string,
+  ) {
     await this.prisma.$transaction(async (tx) => {
       const order = await tx.order.findUnique({ where: { id: orderId } });
       if (!order) return;
 
       // Refund Logic
-      if ((status === 'Canceled' || status === 'Partial') && order.status !== 'Canceled' && order.status !== 'Partial') {
+      if (
+        (status === 'Canceled' || status === 'Partial') &&
+        order.status !== 'Canceled' &&
+        order.status !== 'Partial'
+      ) {
         let refundAmount = 0;
         if (status === 'Canceled') {
           refundAmount = order.charge;
@@ -83,30 +101,34 @@ export class OrdersService {
         if (refundAmount > 0) {
           await tx.user.update({
             where: { id: order.userId },
-            data: { balance: { increment: refundAmount } }
+            data: { balance: { increment: refundAmount } },
           });
 
           await tx.transaction.create({
             data: {
               userId: order.userId,
               amount: refundAmount,
-              type: 'refund' // Fixed type
-            }
+              type: 'refund', // Fixed type
+            },
           });
-          this.logger.log(`Refunded ${refundAmount} to User ${order.userId} for Order ${orderId} (${status})`);
+          this.logger.log(
+            `Refunded ${refundAmount} to User ${order.userId} for Order ${orderId} (${status})`,
+          );
         }
       }
 
       await tx.order.update({
         where: { id: orderId },
-        data: { status }
+        data: { status },
       });
     });
   }
 
   async create(userId: number, createOrderDto: CreateOrderDto) {
     // 1. Get Service and User
-    const service = await this.prisma.service.findUnique({ where: { id: createOrderDto.serviceId } });
+    const service = await this.prisma.service.findUnique({
+      where: { id: createOrderDto.serviceId },
+    });
     if (!service) throw new BadRequestException('Service not found');
 
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
@@ -114,7 +136,9 @@ export class OrdersService {
 
     // 2. Calculate Cost
     const charge = (service.rate * createOrderDto.quantity) / 1000;
-    const cost = service.providerRate ? (service.providerRate * createOrderDto.quantity) / 1000 : 0;
+    const cost = service.providerRate
+      ? (service.providerRate * createOrderDto.quantity) / 1000
+      : 0;
 
     // 3. Check Balance
     if (user.balance < charge) {
@@ -122,7 +146,10 @@ export class OrdersService {
     }
 
     // 4. Determine Provider
-    const provider = service.provider === 'morethanpanel' ? this.moreThanPanel : this.justAnotherPanel;
+    const provider =
+      service.provider === 'morethanpanel'
+        ? this.moreThanPanel
+        : this.justAnotherPanel;
 
     // 5. Place Order with Provider
     let providerResponse;
@@ -132,13 +159,16 @@ export class OrdersService {
         createOrderDto.link,
         createOrderDto.quantity,
         createOrderDto.runs,
-        createOrderDto.interval
+        createOrderDto.interval,
       );
     } catch (e) {
-      throw new BadRequestException(`Provider Error: ${e.message}`);
+      const err = e as Error;
+      throw new BadRequestException(`Provider Error: ${err.message}`);
     }
 
-    if (!providerResponse.order) {
+    type ProviderResponse = { order?: string | number };
+    const orderId = (providerResponse as ProviderResponse).order;
+    if (!orderId) {
       throw new BadRequestException('Failed to place order with provider');
     }
 
@@ -149,7 +179,7 @@ export class OrdersService {
         where: { id: userId },
         data: {
           balance: { decrement: charge },
-          totalSpent: { increment: charge }
+          totalSpent: { increment: charge },
         },
       });
 
@@ -163,11 +193,11 @@ export class OrdersService {
           charge,
           cost,
           provider: service.provider,
-          providerOrderId: providerResponse.order.toString(),
+          providerOrderId: String(orderId),
           status: 'pending',
           dripFeed: createOrderDto.dripFeed,
           runs: createOrderDto.runs,
-          interval: createOrderDto.interval
+          interval: createOrderDto.interval,
         },
       });
 
@@ -192,32 +222,44 @@ export class OrdersService {
         skip,
         take: Number(limit),
         orderBy: { createdAt: 'desc' },
-        include: { service: true }
+        include: { service: true },
       }),
-      this.prisma.order.count({ where: { userId } })
+      this.prisma.order.count({ where: { userId } }),
     ]);
-    return { data: orders, total, page, limit, totalPages: Math.ceil(total / limit) };
+    return {
+      data: orders,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async refillOrder(userId: number, orderId: number) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId, userId },
-      include: { service: true }
+      include: { service: true },
     });
 
     if (!order) throw new BadRequestException('Order not found');
-    if (!order.providerOrderId) throw new BadRequestException('Order cannot be refilled');
+    if (!order.providerOrderId)
+      throw new BadRequestException('Order cannot be refilled');
 
-    const provider = order.provider === 'morethanpanel' ? this.moreThanPanel : this.justAnotherPanel;
+    const provider =
+      order.provider === 'morethanpanel'
+        ? this.moreThanPanel
+        : this.justAnotherPanel;
 
     try {
-      const response = await provider.refill(order.providerOrderId);
+      const response = (await provider.refill(order.providerOrderId)) as {
+        error?: string;
+      };
       if (response.error) throw new BadRequestException(response.error);
 
       // Update status
       await this.prisma.order.update({
         where: { id: orderId },
-        data: { refillStatus: 'Pending' }
+        data: { refillStatus: 'Pending' },
       });
 
       return { success: true, response };

@@ -12,18 +12,6 @@ describe('PaymentsService', () => {
   let service: PaymentsService;
   let prismaService: jest.Mocked<PrismaService>;
 
-  const mockPrismaTransaction = {
-    findFirst: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    updateMany: jest.fn(),
-  };
-
-  const mockPrismaUser = {
-    update: jest.fn(),
-    findUnique: jest.fn(),
-  };
-
   beforeEach(async () => {
     jest.clearAllMocks();
 
@@ -65,23 +53,28 @@ describe('PaymentsService', () => {
   describe('createDeposit', () => {
     describe('input validation', () => {
       it('should throw BadRequestException when amount is 0', async () => {
-        await expect(service.createDeposit(1, 0, 'mock'))
-          .rejects.toThrow('Amount must be greater than 0');
+        await expect(service.createDeposit(1, 0, 'mock')).rejects.toThrow(
+          'Amount must be greater than 0',
+        );
       });
 
       it('should throw BadRequestException when amount is negative', async () => {
-        await expect(service.createDeposit(1, -50, 'mock'))
-          .rejects.toThrow('Amount must be greater than 0');
+        await expect(service.createDeposit(1, -50, 'mock')).rejects.toThrow(
+          'Amount must be greater than 0',
+        );
       });
 
       it('should throw BadRequestException when amount exceeds max', async () => {
-        await expect(service.createDeposit(1, 100001, 'mock'))
-          .rejects.toThrow('Maximum deposit is $100,000');
+        await expect(service.createDeposit(1, 100001, 'mock')).rejects.toThrow(
+          'Maximum deposit is $100,000',
+        );
       });
 
       it('should accept valid amount at max boundary', async () => {
         const mockTx = { id: 1, gatewayTxId: 'TX_123' };
-        (prismaService.transaction.create as jest.Mock).mockResolvedValue(mockTx);
+        (prismaService.transaction.create as jest.Mock).mockResolvedValue(
+          mockTx,
+        );
 
         const result = await service.createDeposit(1, 100000, 'mock');
         expect(result.transactionId).toBe(1);
@@ -97,7 +90,9 @@ describe('PaymentsService', () => {
 
       it('should create binance deposit successfully', async () => {
         const mockTx = { id: 1, gatewayTxId: 'BSMM1_123456' };
-        (prismaService.transaction.create as jest.Mock).mockResolvedValue(mockTx);
+        (prismaService.transaction.create as jest.Mock).mockResolvedValue(
+          mockTx,
+        );
 
         mockedAxios.post.mockResolvedValue({
           data: {
@@ -153,11 +148,15 @@ describe('PaymentsService', () => {
         mockedAxios.post.mockRejectedValue(new Error('Auth failed'));
 
         const mockTx = { id: 1, gatewayTxId: 'TX_123_456' };
-        (prismaService.transaction.create as jest.Mock).mockResolvedValue(mockTx);
+        (prismaService.transaction.create as jest.Mock).mockResolvedValue(
+          mockTx,
+        );
 
         await service.createDeposit(1, 100, 'binance');
 
-        expect(loggerWarnSpy).toHaveBeenCalledWith('BINANCE_PAY credentials missing');
+        expect(loggerWarnSpy).toHaveBeenCalledWith(
+          'BINANCE_PAY credentials missing',
+        );
       });
 
       it('should throw BadRequestException in production when binance API fails', async () => {
@@ -165,8 +164,9 @@ describe('PaymentsService', () => {
 
         mockedAxios.post.mockRejectedValue(new Error('API Error'));
 
-        await expect(service.createDeposit(1, 100, 'binance'))
-          .rejects.toThrow(BadRequestException);
+        await expect(service.createDeposit(1, 100, 'binance')).rejects.toThrow(
+          BadRequestException,
+        );
       });
 
       it('should fall back to mock when binance API fails in development', async () => {
@@ -175,7 +175,9 @@ describe('PaymentsService', () => {
         mockedAxios.post.mockRejectedValue(new Error('API Error'));
 
         const mockTx = { id: 2, gatewayTxId: 'TX_123_456' };
-        (prismaService.transaction.create as jest.Mock).mockResolvedValue(mockTx);
+        (prismaService.transaction.create as jest.Mock).mockResolvedValue(
+          mockTx,
+        );
 
         const result = await service.createDeposit(1, 100, 'binance');
 
@@ -196,8 +198,9 @@ describe('PaymentsService', () => {
           },
         });
 
-        await expect(service.createDeposit(1, 100, 'binance'))
-          .rejects.toThrow(BadRequestException);
+        await expect(service.createDeposit(1, 100, 'binance')).rejects.toThrow(
+          BadRequestException,
+        );
       });
 
       it('should use default URLs when env vars not set', async () => {
@@ -205,12 +208,17 @@ describe('PaymentsService', () => {
         delete process.env.BACKEND_URL;
 
         const mockTx = { id: 1, gatewayTxId: 'BSMM1_123' };
-        (prismaService.transaction.create as jest.Mock).mockResolvedValue(mockTx);
+        (prismaService.transaction.create as jest.Mock).mockResolvedValue(
+          mockTx,
+        );
 
         mockedAxios.post.mockResolvedValue({
           data: {
             status: 'SUCCESS',
-            data: { universalUrl: 'https://test.com', qrcodeLink: 'https://qr.com' },
+            data: {
+              universalUrl: 'https://test.com',
+              qrcodeLink: 'https://qr.com',
+            },
           },
         });
 
@@ -232,12 +240,17 @@ describe('PaymentsService', () => {
         process.env.BACKEND_URL = 'https://api.mysite.com';
 
         const mockTx = { id: 1, gatewayTxId: 'BSMM1_123' };
-        (prismaService.transaction.create as jest.Mock).mockResolvedValue(mockTx);
+        (prismaService.transaction.create as jest.Mock).mockResolvedValue(
+          mockTx,
+        );
 
         mockedAxios.post.mockResolvedValue({
           data: {
             status: 'SUCCESS',
-            data: { universalUrl: 'https://test.com', qrcodeLink: 'https://qr.com' },
+            data: {
+              universalUrl: 'https://test.com',
+              qrcodeLink: 'https://qr.com',
+            },
           },
         });
 
@@ -256,12 +269,17 @@ describe('PaymentsService', () => {
 
       it('should format amount to 2 decimal places', async () => {
         const mockTx = { id: 1, gatewayTxId: 'BSMM1_123' };
-        (prismaService.transaction.create as jest.Mock).mockResolvedValue(mockTx);
+        (prismaService.transaction.create as jest.Mock).mockResolvedValue(
+          mockTx,
+        );
 
         mockedAxios.post.mockResolvedValue({
           data: {
             status: 'SUCCESS',
-            data: { universalUrl: 'https://test.com', qrcodeLink: 'https://qr.com' },
+            data: {
+              universalUrl: 'https://test.com',
+              qrcodeLink: 'https://qr.com',
+            },
           },
         });
 
@@ -292,7 +310,9 @@ describe('PaymentsService', () => {
         });
 
         const mockTx = { id: 1, gatewayTxId: 'TX_123' };
-        (prismaService.transaction.create as jest.Mock).mockResolvedValue(mockTx);
+        (prismaService.transaction.create as jest.Mock).mockResolvedValue(
+          mockTx,
+        );
 
         await service.createDeposit(1, 100, 'binance');
 
@@ -307,13 +327,16 @@ describe('PaymentsService', () => {
     describe('mock/other gateway', () => {
       it('should create mock deposit for non-binance gateway', async () => {
         const mockTx = { id: 5, gatewayTxId: 'TX_999_111' };
-        (prismaService.transaction.create as jest.Mock).mockResolvedValue(mockTx);
+        (prismaService.transaction.create as jest.Mock).mockResolvedValue(
+          mockTx,
+        );
 
         const result = await service.createDeposit(2, 50, 'manual');
 
         expect(result).toEqual({
           transactionId: 5,
-          gatewayUrl: 'http://localhost:3000/dashboard/add-funds?mock_success=true&amount=50',
+          gatewayUrl:
+            'http://localhost:3000/dashboard/add-funds?mock_success=true&amount=50',
           gatewayTxId: 'TX_999_111',
         });
 
@@ -329,7 +352,9 @@ describe('PaymentsService', () => {
 
       it('should use "mock" as default gateway when empty string provided', async () => {
         const mockTx = { id: 6, gatewayTxId: 'TX_888_222' };
-        (prismaService.transaction.create as jest.Mock).mockResolvedValue(mockTx);
+        (prismaService.transaction.create as jest.Mock).mockResolvedValue(
+          mockTx,
+        );
 
         await service.createDeposit(3, 25, '');
 
@@ -359,12 +384,22 @@ describe('PaymentsService', () => {
         .digest('hex')
         .toUpperCase();
 
-      const result = service.verifyBinanceWebhookSignature(timestamp, nonce, body, expectedSignature);
+      const result = service.verifyBinanceWebhookSignature(
+        timestamp,
+        nonce,
+        body,
+        expectedSignature,
+      );
       expect(result).toBe(true);
     });
 
     it('should return false for invalid signature', () => {
-      const result = service.verifyBinanceWebhookSignature('123', 'abc', '{}', 'INVALID_SIG');
+      const result = service.verifyBinanceWebhookSignature(
+        '123',
+        'abc',
+        '{}',
+        'INVALID_SIG',
+      );
       expect(result).toBe(false);
     });
 
@@ -378,7 +413,12 @@ describe('PaymentsService', () => {
         .digest('hex')
         .toUpperCase();
 
-      const result = service.verifyBinanceWebhookSignature('123', 'abc', '{}', expectedSignature);
+      const result = service.verifyBinanceWebhookSignature(
+        '123',
+        'abc',
+        '{}',
+        expectedSignature,
+      );
       expect(result).toBe(true);
     });
   });
@@ -388,7 +428,11 @@ describe('PaymentsService', () => {
       process.env.BINANCE_PAY_SECRET_KEY = 'webhook-secret';
     });
 
-    const generateValidSignature = (payload: any, timestamp: string, nonce: string) => {
+    const generateValidSignature = (
+      payload: any,
+      timestamp: string,
+      nonce: string,
+    ) => {
       const body = JSON.stringify(payload);
       const signPayload = `${timestamp}\n${nonce}\n${body}\n`;
       return crypto
@@ -412,25 +456,44 @@ describe('PaymentsService', () => {
       const nonce = 'testnonce';
       const signature = generateValidSignature(payload, timestamp, nonce);
 
-      const result = await service.processBinanceWebhook(payload, timestamp, nonce, signature);
+      const result = await service.processBinanceWebhook(
+        payload,
+        timestamp,
+        nonce,
+        signature,
+      );
 
       expect(result).toEqual({ returnCode: 'SUCCESS', returnMessage: 'OK' });
     });
 
     it('should return OK when transaction not found', async () => {
-      const payload = { bizStatus: 'PAY_SUCCESS', merchantTradeNo: 'NOTFOUND123' };
+      const payload = {
+        bizStatus: 'PAY_SUCCESS',
+        merchantTradeNo: 'NOTFOUND123',
+      };
       const timestamp = '123456';
       const nonce = 'testnonce';
       const signature = generateValidSignature(payload, timestamp, nonce);
 
-      (prismaService.$transaction as jest.Mock).mockImplementation(async (cb) => {
-        return cb({
-          transaction: { findFirst: jest.fn().mockResolvedValue(null), update: jest.fn(), updateMany: jest.fn() },
-          user: { update: jest.fn() },
-        });
-      });
+      (prismaService.$transaction as jest.Mock).mockImplementation(
+        async (cb) => {
+          return cb({
+            transaction: {
+              findFirst: jest.fn().mockResolvedValue(null),
+              update: jest.fn(),
+              updateMany: jest.fn(),
+            },
+            user: { update: jest.fn() },
+          });
+        },
+      );
 
-      const result = await service.processBinanceWebhook(payload, timestamp, nonce, signature);
+      const result = await service.processBinanceWebhook(
+        payload,
+        timestamp,
+        nonce,
+        signature,
+      );
 
       expect(result).toEqual({ returnCode: 'SUCCESS', returnMessage: 'OK' });
     });
@@ -441,43 +504,76 @@ describe('PaymentsService', () => {
       const nonce = 'testnonce';
       const signature = generateValidSignature(payload, timestamp, nonce);
 
-      (prismaService.$transaction as jest.Mock).mockImplementation(async (cb) => {
-        return cb({
-          transaction: {
-            findFirst: jest.fn().mockResolvedValue({ id: 1, gatewayStatus: 'completed', userId: 1, amount: 100 }),
-            update: jest.fn(),
-            updateMany: jest.fn(),
-          },
-          user: { update: jest.fn() },
-        });
+      (prismaService.$transaction as jest.Mock).mockImplementation(
+        async (cb) => {
+          return cb({
+            transaction: {
+              findFirst: jest.fn().mockResolvedValue({
+                id: 1,
+                gatewayStatus: 'completed',
+                userId: 1,
+                amount: 100,
+              }),
+              update: jest.fn(),
+              updateMany: jest.fn(),
+            },
+            user: { update: jest.fn() },
+          });
+        },
+      );
+
+      const result = await service.processBinanceWebhook(
+        payload,
+        timestamp,
+        nonce,
+        signature,
+      );
+
+      expect(result).toEqual({
+        returnCode: 'SUCCESS',
+        returnMessage: 'Already processed',
       });
-
-      const result = await service.processBinanceWebhook(payload, timestamp, nonce, signature);
-
-      expect(result).toEqual({ returnCode: 'SUCCESS', returnMessage: 'Already processed' });
     });
 
     it('should process successful payment and update balance', async () => {
-      const payload = { bizStatus: 'PAY_SUCCESS', merchantTradeNo: 'TX123', orderAmount: '100.00' };
+      const payload = {
+        bizStatus: 'PAY_SUCCESS',
+        merchantTradeNo: 'TX123',
+        orderAmount: '100.00',
+      };
       const timestamp = '123456';
       const nonce = 'testnonce';
       const signature = generateValidSignature(payload, timestamp, nonce);
 
       const mockTxUpdateMany = jest.fn().mockResolvedValue({ count: 1 });
-      const mockUserUpdate = jest.fn().mockResolvedValue({ id: 1, balance: 200, referredById: null });
+      const mockUserUpdate = jest
+        .fn()
+        .mockResolvedValue({ id: 1, balance: 200, referredById: null });
 
-      (prismaService.$transaction as jest.Mock).mockImplementation(async (cb) => {
-        return cb({
-          transaction: {
-            findFirst: jest.fn().mockResolvedValue({ id: 1, gatewayStatus: 'pending', userId: 1, amount: 100 }),
-            update: jest.fn(),
-            updateMany: mockTxUpdateMany,
-          },
-          user: { update: mockUserUpdate },
-        });
-      });
+      (prismaService.$transaction as jest.Mock).mockImplementation(
+        async (cb) => {
+          return cb({
+            transaction: {
+              findFirst: jest.fn().mockResolvedValue({
+                id: 1,
+                gatewayStatus: 'pending',
+                userId: 1,
+                amount: 100,
+              }),
+              update: jest.fn(),
+              updateMany: mockTxUpdateMany,
+            },
+            user: { update: mockUserUpdate },
+          });
+        },
+      );
 
-      const result = await service.processBinanceWebhook(payload, timestamp, nonce, signature);
+      const result = await service.processBinanceWebhook(
+        payload,
+        timestamp,
+        nonce,
+        signature,
+      );
 
       expect(mockTxUpdateMany).toHaveBeenCalledWith({
         where: {
@@ -504,19 +600,34 @@ describe('PaymentsService', () => {
       const mockTxUpdateMany = jest.fn().mockResolvedValue({ count: 0 });
       const mockUserUpdate = jest.fn();
 
-      (prismaService.$transaction as jest.Mock).mockImplementation(async (cb) => {
-        return cb({
-          transaction: {
-            findFirst: jest.fn().mockResolvedValue({ id: 1, gatewayStatus: 'pending', userId: 1, amount: 100 }),
-            updateMany: mockTxUpdateMany,
-          },
-          user: { update: mockUserUpdate },
-        });
+      (prismaService.$transaction as jest.Mock).mockImplementation(
+        async (cb) => {
+          return cb({
+            transaction: {
+              findFirst: jest.fn().mockResolvedValue({
+                id: 1,
+                gatewayStatus: 'pending',
+                userId: 1,
+                amount: 100,
+              }),
+              updateMany: mockTxUpdateMany,
+            },
+            user: { update: mockUserUpdate },
+          });
+        },
+      );
+
+      const result = await service.processBinanceWebhook(
+        payload,
+        timestamp,
+        nonce,
+        signature,
+      );
+
+      expect(result).toEqual({
+        returnCode: 'SUCCESS',
+        returnMessage: 'Already processed',
       });
-
-      const result = await service.processBinanceWebhook(payload, timestamp, nonce, signature);
-
-      expect(result).toEqual({ returnCode: 'SUCCESS', returnMessage: 'Already processed' });
       expect(mockUserUpdate).not.toHaveBeenCalled();
     });
 
@@ -526,20 +637,28 @@ describe('PaymentsService', () => {
       const nonce = 'testnonce';
       const signature = generateValidSignature(payload, timestamp, nonce);
 
-      const mockUserUpdate = jest.fn()
+      const mockUserUpdate = jest
+        .fn()
         .mockResolvedValueOnce({ id: 1, balance: 200, referredById: 99 })
         .mockResolvedValueOnce({ id: 99, affiliateBalance: 10 });
 
-      (prismaService.$transaction as jest.Mock).mockImplementation(async (cb) => {
-        return cb({
-          transaction: {
-            findFirst: jest.fn().mockResolvedValue({ id: 1, gatewayStatus: 'pending', userId: 1, amount: 100 }),
-            update: jest.fn(),
-            updateMany: jest.fn().mockResolvedValue({ count: 1 }),
-          },
-          user: { update: mockUserUpdate },
-        });
-      });
+      (prismaService.$transaction as jest.Mock).mockImplementation(
+        async (cb) => {
+          return cb({
+            transaction: {
+              findFirst: jest.fn().mockResolvedValue({
+                id: 1,
+                gatewayStatus: 'pending',
+                userId: 1,
+                amount: 100,
+              }),
+              update: jest.fn(),
+              updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+            },
+            user: { update: mockUserUpdate },
+          });
+        },
+      );
 
       await service.processBinanceWebhook(payload, timestamp, nonce, signature);
 
@@ -565,14 +684,22 @@ describe('PaymentsService', () => {
         service.processWebhook(1, 100, 'my_mock_secret'),
       ).rejects.toThrow(BadRequestException);
 
-      const mockUserUpdate = jest.fn().mockResolvedValue({ id: 1, balance: 200, referredById: null });
+      const mockUserUpdate = jest
+        .fn()
+        .mockResolvedValue({ id: 1, balance: 200, referredById: null });
 
-      (prismaService.$transaction as jest.Mock).mockImplementation(async (cb) => {
-        return cb({
-          transaction: { findFirst: jest.fn(), update: jest.fn(), updateMany: jest.fn() },
-          user: { update: mockUserUpdate },
-        });
-      });
+      (prismaService.$transaction as jest.Mock).mockImplementation(
+        async (cb) => {
+          return cb({
+            transaction: {
+              findFirst: jest.fn(),
+              update: jest.fn(),
+              updateMany: jest.fn(),
+            },
+            user: { update: mockUserUpdate },
+          });
+        },
+      );
 
       const result = await service.processWebhook(1, 100, 'custom_secret_123');
       expect(result.success).toBe(true);
@@ -581,28 +708,44 @@ describe('PaymentsService', () => {
     it('should fall back to default secret when env not set', async () => {
       delete process.env.MOCK_WEBHOOK_SECRET;
 
-      const mockUserUpdate = jest.fn().mockResolvedValue({ id: 1, balance: 150, referredById: null });
+      const mockUserUpdate = jest
+        .fn()
+        .mockResolvedValue({ id: 1, balance: 150, referredById: null });
 
-      (prismaService.$transaction as jest.Mock).mockImplementation(async (cb) => {
-        return cb({
-          transaction: { findFirst: jest.fn(), update: jest.fn(), updateMany: jest.fn() },
-          user: { update: mockUserUpdate },
-        });
-      });
+      (prismaService.$transaction as jest.Mock).mockImplementation(
+        async (cb) => {
+          return cb({
+            transaction: {
+              findFirst: jest.fn(),
+              update: jest.fn(),
+              updateMany: jest.fn(),
+            },
+            user: { update: mockUserUpdate },
+          });
+        },
+      );
 
       const result = await service.processWebhook(1, 50, 'my_mock_secret');
       expect(result).toEqual({ success: true, newBalance: 150 });
     });
 
     it('should process webhook without txId', async () => {
-      const mockUserUpdate = jest.fn().mockResolvedValue({ id: 1, balance: 150, referredById: null });
+      const mockUserUpdate = jest
+        .fn()
+        .mockResolvedValue({ id: 1, balance: 150, referredById: null });
 
-      (prismaService.$transaction as jest.Mock).mockImplementation(async (cb) => {
-        return cb({
-          transaction: { findFirst: jest.fn(), update: jest.fn(), updateMany: jest.fn() },
-          user: { update: mockUserUpdate },
-        });
-      });
+      (prismaService.$transaction as jest.Mock).mockImplementation(
+        async (cb) => {
+          return cb({
+            transaction: {
+              findFirst: jest.fn(),
+              update: jest.fn(),
+              updateMany: jest.fn(),
+            },
+            user: { update: mockUserUpdate },
+          });
+        },
+      );
 
       const result = await service.processWebhook(1, 50, 'my_mock_secret');
 
@@ -614,36 +757,51 @@ describe('PaymentsService', () => {
     });
 
     it('should return "Already processed" for completed txId', async () => {
-      (prismaService.$transaction as jest.Mock).mockImplementation(async (cb) => {
-        return cb({
-          transaction: {
-            findFirst: jest.fn().mockResolvedValue({ id: 1, gatewayStatus: 'completed' }),
-            update: jest.fn(),
-            updateMany: jest.fn(),
-          },
-          user: { update: jest.fn() },
-        });
-      });
+      (prismaService.$transaction as jest.Mock).mockImplementation(
+        async (cb) => {
+          return cb({
+            transaction: {
+              findFirst: jest
+                .fn()
+                .mockResolvedValue({ id: 1, gatewayStatus: 'completed' }),
+              update: jest.fn(),
+              updateMany: jest.fn(),
+            },
+            user: { update: jest.fn() },
+          });
+        },
+      );
 
-      const result = await service.processWebhook(1, 50, 'my_mock_secret', 'TX_COMPLETED');
+      const result = await service.processWebhook(
+        1,
+        50,
+        'my_mock_secret',
+        'TX_COMPLETED',
+      );
 
       expect(result).toEqual({ success: true, message: 'Already processed' });
     });
 
     it('should update transaction status when txId found and pending', async () => {
       const mockTxUpdateMany = jest.fn().mockResolvedValue({ count: 1 });
-      const mockUserUpdate = jest.fn().mockResolvedValue({ id: 1, balance: 100, referredById: null });
+      const mockUserUpdate = jest
+        .fn()
+        .mockResolvedValue({ id: 1, balance: 100, referredById: null });
 
-      (prismaService.$transaction as jest.Mock).mockImplementation(async (cb) => {
-        return cb({
-          transaction: {
-            findFirst: jest.fn().mockResolvedValue({ id: 5, gatewayStatus: 'pending' }),
-            update: jest.fn(),
-            updateMany: mockTxUpdateMany,
-          },
-          user: { update: mockUserUpdate },
-        });
-      });
+      (prismaService.$transaction as jest.Mock).mockImplementation(
+        async (cb) => {
+          return cb({
+            transaction: {
+              findFirst: jest
+                .fn()
+                .mockResolvedValue({ id: 5, gatewayStatus: 'pending' }),
+              update: jest.fn(),
+              updateMany: mockTxUpdateMany,
+            },
+            user: { update: mockUserUpdate },
+          });
+        },
+      );
 
       await service.processWebhook(1, 50, 'my_mock_secret', 'TX_PENDING');
 
@@ -660,17 +818,26 @@ describe('PaymentsService', () => {
       const mockTxUpdateMany = jest.fn().mockResolvedValue({ count: 0 });
       const mockUserUpdate = jest.fn();
 
-      (prismaService.$transaction as jest.Mock).mockImplementation(async (cb) => {
-        return cb({
-          transaction: {
-            findFirst: jest.fn().mockResolvedValue({ id: 5, gatewayStatus: 'pending' }),
-            updateMany: mockTxUpdateMany,
-          },
-          user: { update: mockUserUpdate },
-        });
-      });
+      (prismaService.$transaction as jest.Mock).mockImplementation(
+        async (cb) => {
+          return cb({
+            transaction: {
+              findFirst: jest
+                .fn()
+                .mockResolvedValue({ id: 5, gatewayStatus: 'pending' }),
+              updateMany: mockTxUpdateMany,
+            },
+            user: { update: mockUserUpdate },
+          });
+        },
+      );
 
-      const result = await service.processWebhook(1, 50, 'my_mock_secret', 'TX_RACE');
+      const result = await service.processWebhook(
+        1,
+        50,
+        'my_mock_secret',
+        'TX_RACE',
+      );
 
       expect(result).toEqual({ success: true, message: 'Already processed' });
       expect(mockUserUpdate).not.toHaveBeenCalled();
@@ -678,18 +845,22 @@ describe('PaymentsService', () => {
 
     it('should skip transaction update when txId not found', async () => {
       const mockTxUpdateMany = jest.fn();
-      const mockUserUpdate = jest.fn().mockResolvedValue({ id: 1, balance: 100, referredById: null });
+      const mockUserUpdate = jest
+        .fn()
+        .mockResolvedValue({ id: 1, balance: 100, referredById: null });
 
-      (prismaService.$transaction as jest.Mock).mockImplementation(async (cb) => {
-        return cb({
-          transaction: {
-            findFirst: jest.fn().mockResolvedValue(null),
-            update: jest.fn(),
-            updateMany: mockTxUpdateMany,
-          },
-          user: { update: mockUserUpdate },
-        });
-      });
+      (prismaService.$transaction as jest.Mock).mockImplementation(
+        async (cb) => {
+          return cb({
+            transaction: {
+              findFirst: jest.fn().mockResolvedValue(null),
+              update: jest.fn(),
+              updateMany: mockTxUpdateMany,
+            },
+            user: { update: mockUserUpdate },
+          });
+        },
+      );
 
       await service.processWebhook(1, 50, 'my_mock_secret', 'TX_NOTFOUND');
 
@@ -698,16 +869,23 @@ describe('PaymentsService', () => {
     });
 
     it('should credit affiliate commission for referred user', async () => {
-      const mockUserUpdate = jest.fn()
+      const mockUserUpdate = jest
+        .fn()
         .mockResolvedValueOnce({ id: 1, balance: 100, referredById: 55 })
         .mockResolvedValueOnce({ id: 55, affiliateBalance: 5 });
 
-      (prismaService.$transaction as jest.Mock).mockImplementation(async (cb) => {
-        return cb({
-          transaction: { findFirst: jest.fn(), update: jest.fn(), updateMany: jest.fn() },
-          user: { update: mockUserUpdate },
-        });
-      });
+      (prismaService.$transaction as jest.Mock).mockImplementation(
+        async (cb) => {
+          return cb({
+            transaction: {
+              findFirst: jest.fn(),
+              update: jest.fn(),
+              updateMany: jest.fn(),
+            },
+            user: { update: mockUserUpdate },
+          });
+        },
+      );
 
       await service.processWebhook(1, 50, 'my_mock_secret');
 
@@ -719,14 +897,22 @@ describe('PaymentsService', () => {
     });
 
     it('should not credit commission when user has no referrer', async () => {
-      const mockUserUpdate = jest.fn().mockResolvedValue({ id: 1, balance: 100, referredById: null });
+      const mockUserUpdate = jest
+        .fn()
+        .mockResolvedValue({ id: 1, balance: 100, referredById: null });
 
-      (prismaService.$transaction as jest.Mock).mockImplementation(async (cb) => {
-        return cb({
-          transaction: { findFirst: jest.fn(), update: jest.fn(), updateMany: jest.fn() },
-          user: { update: mockUserUpdate },
-        });
-      });
+      (prismaService.$transaction as jest.Mock).mockImplementation(
+        async (cb) => {
+          return cb({
+            transaction: {
+              findFirst: jest.fn(),
+              update: jest.fn(),
+              updateMany: jest.fn(),
+            },
+            user: { update: mockUserUpdate },
+          });
+        },
+      );
 
       await service.processWebhook(1, 50, 'my_mock_secret');
 
@@ -746,7 +932,10 @@ describe('PaymentsService', () => {
       mockedAxios.post.mockResolvedValue({
         data: {
           status: 'SUCCESS',
-          data: { universalUrl: 'https://test.com', qrcodeLink: 'https://qr.com' },
+          data: {
+            universalUrl: 'https://test.com',
+            qrcodeLink: 'https://qr.com',
+          },
         },
       });
 
@@ -774,7 +963,10 @@ describe('PaymentsService', () => {
       mockedAxios.post.mockResolvedValue({
         data: {
           status: 'SUCCESS',
-          data: { universalUrl: 'https://test.com', qrcodeLink: 'https://qr.com' },
+          data: {
+            universalUrl: 'https://test.com',
+            qrcodeLink: 'https://qr.com',
+          },
         },
       });
 

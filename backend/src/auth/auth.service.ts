@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -15,18 +15,37 @@ export class AuthService {
     private jwtService: JwtService,
     private prisma: PrismaService,
     private mailService: MailService,
-  ) { }
+  ) {}
 
-  async validateUser(email: string, pass: string): Promise<any> {
+  async validateUser(
+    email: string,
+    pass: string,
+  ): Promise<Omit<
+    {
+      id: number;
+      email: string;
+      name: string | null;
+      role: string;
+      balance: number;
+    },
+    'password'
+  > | null> {
     const user = await this.usersService.findOneByEmail(email);
     if (user && (await bcrypt.compare(pass, user.password))) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructuring to omit password
       const { password, ...result } = user;
       return result;
     }
     return null;
   }
 
-  async login(user: any) {
+  login(user: {
+    id: number;
+    email: string;
+    name?: string | null;
+    role: string;
+    balance: number;
+  }) {
     const payload = { email: user.email, sub: user.id, role: user.role };
     return {
       access_token: this.jwtService.sign(payload),
@@ -35,8 +54,8 @@ export class AuthService {
         email: user.email,
         name: user.name,
         role: user.role,
-        balance: user.balance
-      }
+        balance: user.balance,
+      },
     };
   }
 
@@ -44,9 +63,13 @@ export class AuthService {
     this.logger.log(`Attempting to register user: ${data.email}`);
 
     // 1. Check if user exists
-    const existing = await this.prisma.user.findUnique({ where: { email: data.email } });
+    const existing = await this.prisma.user.findUnique({
+      where: { email: data.email },
+    });
     if (existing) {
-      this.logger.warn(`Registration failed: Email ${data.email} already exists ID: ${existing.id}`);
+      this.logger.warn(
+        `Registration failed: Email ${data.email} already exists ID: ${existing.id}`,
+      );
       throw new BadRequestException('Email already currently in use');
     }
 
@@ -54,11 +77,16 @@ export class AuthService {
 
     let referrerId = null;
     if (data.referralCode) {
-      const referrer = await this.prisma.user.findUnique({ where: { referralCode: data.referralCode } });
+      const referrer = await this.prisma.user.findUnique({
+        where: { referralCode: data.referralCode },
+      });
       if (referrer) referrerId = referrer.id;
     }
 
-    const myReferralCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const myReferralCode = Math.random()
+      .toString(36)
+      .substring(2, 10)
+      .toUpperCase();
 
     const newUser = await this.prisma.user.create({
       data: {
@@ -76,20 +104,33 @@ export class AuthService {
     return this.login(newUser);
   }
 
-  async validateOAuthUser(profile: { email: string, name: string, picture: string, accessToken: string }) {
-    const user = await this.prisma.user.findUnique({ where: { email: profile.email } });
+  async validateOAuthUser(profile: {
+    email: string;
+    name: string;
+    picture: string;
+    accessToken: string;
+  }) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: profile.email },
+    });
 
     if (user) {
       // User exists, just return them
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructuring to omit password
       const { password, ...result } = user;
       return result;
     }
 
     // New user -> Register them automatically
-    // We generate a random password since they use Google
-    const randomPassword = Math.random().toString(36).slice(-8);
-    const hashedPassword = await bcrypt.hash(randomPassword, 10);
-    const myReferralCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+    // We generate a random password since they use Google (OAuth users don't use it)
+    const hashedPassword = await bcrypt.hash(
+      Math.random().toString(36).slice(-8),
+      10,
+    );
+    const myReferralCode = Math.random()
+      .toString(36)
+      .substring(2, 10)
+      .toUpperCase();
 
     const newUser = await this.prisma.user.create({
       data: {
@@ -98,12 +139,13 @@ export class AuthService {
         password: hashedPassword,
         referralCode: myReferralCode,
         role: 'user',
-        balance: 0
-      }
+        balance: 0,
+      },
     });
 
     await this.mailService.sendWelcome(newUser.email);
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructuring to omit password
     const { password, ...result } = newUser;
     return result;
   }

@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { JustAnotherPanelProvider } from '../providers/justanotherpanel.provider';
 import { MoreThanPanelProvider } from '../providers/morethanpanel.provider';
@@ -16,12 +15,16 @@ export class ServicesService {
     private prisma: PrismaService,
     private japProvider: JustAnotherPanelProvider,
     private mtpProvider: MoreThanPanelProvider,
-  ) { }
+  ) {}
 
-  async syncServices(providerKey: 'justanotherpanel' | 'morethanpanel', marginPercent: number) {
-    const provider = providerKey === 'justanotherpanel' ? this.japProvider : this.mtpProvider;
+  async syncServices(
+    providerKey: 'justanotherpanel' | 'morethanpanel',
+    marginPercent: number,
+  ) {
+    const provider =
+      providerKey === 'justanotherpanel' ? this.japProvider : this.mtpProvider;
     const services = await provider.getServices();
-    const multiplier = 1 + (marginPercent / 100);
+    const multiplier = 1 + marginPercent / 100;
     let count = 0;
 
     for (const s of services) {
@@ -34,7 +37,7 @@ export class ServicesService {
       // Upsert Service
       // We check if we already have this provider + providerServiceId
       const existing = await this.prisma.service.findFirst({
-        where: { provider: providerKey, providerServiceId: String(s.service) }
+        where: { provider: providerKey, providerServiceId: String(s.service) },
       });
 
       if (existing) {
@@ -47,8 +50,8 @@ export class ServicesService {
             max: Number(s.max),
             name: s.name, // optional: keep our name or sync theirs
             category: s.category,
-            description: s.description || s.desc || null
-          } as any
+            description: s.description || s.desc || null,
+          } as any,
         });
       } else {
         await this.prisma.service.create({
@@ -62,8 +65,8 @@ export class ServicesService {
             max: Number(s.max),
             provider: providerKey,
             providerServiceId: String(s.service),
-            status: true
-          } as any
+            status: true,
+          } as any,
         });
         count++;
       }
@@ -75,17 +78,24 @@ export class ServicesService {
     try {
       // Basic generic scraper
       const { data } = await axios.get(url, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)' }
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+        },
       });
       const $ = cheerio.load(data);
       const image = $('meta[property="og:image"]').attr('content') || '';
-      const title = $('meta[property="og:title"]').attr('content') || $('title').text() || '';
-      const description = $('meta[property="og:description"]').attr('content') || '';
+      const title =
+        $('meta[property="og:title"]').attr('content') ||
+        $('title').text() ||
+        '';
+      const description =
+        $('meta[property="og:description"]').attr('content') || '';
 
       // Stats parsing (Very basic regex for demonstration)
       // Real implementation would need specific parsers for IG/TikTok/YT or API connection
       return { title, image, description };
-    } catch (e) {
+    } catch {
       return { title: 'Link Preview', image: '', description: '' };
     }
   }
@@ -93,7 +103,7 @@ export class ServicesService {
   async updateGlobalMargin(percentage: number) {
     // safety check
     if (percentage < 0) return;
-    const multiplier = 1 + (percentage / 100);
+    const multiplier = 1 + percentage / 100;
 
     // We only update services that have a providerRate set
     // This query updates rate = providerRate * multiplier
@@ -102,14 +112,14 @@ export class ServicesService {
     // Looping is safer for now to avoid complexity with Raw SQL in this context.
 
     const services = await this.prisma.service.findMany({
-      where: { providerRate: { not: null } }
+      where: { providerRate: { not: null } },
     });
 
     for (const str of services) {
       if (str.providerRate) {
         await this.prisma.service.update({
           where: { id: str.id },
-          data: { rate: Number((str.providerRate * multiplier).toFixed(4)) }
+          data: { rate: Number((str.providerRate * multiplier).toFixed(4)) },
         });
       }
     }
@@ -123,13 +133,13 @@ export class ServicesService {
   findAll() {
     return this.prisma.service.findMany({
       where: { status: true },
-      orderBy: { id: 'asc' }
+      orderBy: { id: 'asc' },
     });
   }
 
   findAllAdmin() {
     return this.prisma.service.findMany({
-      orderBy: { id: 'asc' }
+      orderBy: { id: 'asc' },
     });
   }
 

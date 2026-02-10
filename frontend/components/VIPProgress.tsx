@@ -1,6 +1,6 @@
 'use client';
 import { motion } from 'framer-motion';
-import { Crown, Star, TrendingUp } from 'lucide-react';
+import { Crown, TrendingUp } from 'lucide-react';
 
 interface VIPProps {
     totalSpent: number;

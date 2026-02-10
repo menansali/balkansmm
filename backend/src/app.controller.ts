@@ -9,7 +9,7 @@ export class AppController {
   constructor(
     private readonly appService: AppService,
     private prisma: PrismaService,
-  ) { }
+  ) {}
 
   @Get()
   getHello(): string {

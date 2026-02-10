@@ -10,4 +10,4 @@ import { JustAnotherPanelProvider } from '../providers/justanotherpanel.provider
   controllers: [OrdersController],
   providers: [OrdersService, MoreThanPanelProvider, JustAnotherPanelProvider],
 })
-export class OrdersModule { }
+export class OrdersModule {}

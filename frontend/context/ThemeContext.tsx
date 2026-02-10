@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useSyncExternalStore } from 'react';
 
 type Theme = 'dark' | 'light';
 
@@ -11,18 +11,23 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+const emptySubscribe = () => () => {};
+
+function getThemeSnapshot(): Theme {
+    if (typeof window === 'undefined') return 'dark';
+    const stored = localStorage.getItem('theme') as Theme | null;
+    if (stored) return stored;
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [theme, setThemeState] = useState<Theme>('dark');
-    const [mounted, setMounted] = useState(false);
+    const [theme, setThemeState] = useState<Theme>(() =>
+        typeof window !== 'undefined' ? getThemeSnapshot() : 'dark'
+    );
+    const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
     useEffect(() => {
-        setMounted(true);
-        const stored = localStorage.getItem('theme') as Theme;
-        if (stored) {
-            setThemeState(stored);
-        } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
-            setThemeState('light');
-        }
+        queueMicrotask(() => setThemeState(getThemeSnapshot()));
     }, []);
 
     useEffect(() => {

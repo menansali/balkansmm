@@ -1,16 +1,31 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, ForbiddenException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+  ForbiddenException,
+} from '@nestjs/common';
 import { ServicesService } from './services.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import type { RequestWithUser } from '../common/types';
 
 @Controller('services')
 export class ServicesController {
-  constructor(private readonly servicesService: ServicesService) { }
+  constructor(private readonly servicesService: ServicesService) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  create(@Request() req: any, @Body() createServiceDto: CreateServiceDto) {
+  create(
+    @Request() req: RequestWithUser,
+    @Body() createServiceDto: CreateServiceDto,
+  ) {
     if (req.user.role !== 'admin') throw new ForbiddenException('Admin only');
     return this.servicesService.create(createServiceDto);
   }
@@ -22,8 +37,9 @@ export class ServicesController {
 
   @UseGuards(JwtAuthGuard)
   @Get('admin')
-  async findAllAdmin(@Request() req: any) {
-    if (req.user.role !== 'admin') throw new ForbiddenException('Admin access required');
+  async findAllAdmin(@Request() req: RequestWithUser) {
+    if (req.user.role !== 'admin')
+      throw new ForbiddenException('Admin access required');
     return this.servicesService.findAllAdmin();
   }
 
@@ -34,14 +50,21 @@ export class ServicesController {
 
   @Post('margin')
   @UseGuards(JwtAuthGuard)
-  async setMargin(@Request() req: any, @Body('percentage') percentage: number) {
+  async setMargin(
+    @Request() req: RequestWithUser,
+    @Body('percentage') percentage: number,
+  ) {
     if (req.user.role !== 'admin') throw new ForbiddenException('Admin only');
     return this.servicesService.updateGlobalMargin(percentage);
   }
 
   @Post('sync')
   @UseGuards(JwtAuthGuard)
-  async sync(@Request() req: any, @Body() body: { provider: 'justanotherpanel' | 'morethanpanel', margin: number }) {
+  async sync(
+    @Request() req: RequestWithUser,
+    @Body()
+    body: { provider: 'justanotherpanel' | 'morethanpanel'; margin: number },
+  ) {
     if (req.user.role !== 'admin') throw new ForbiddenException('Admin only');
     return this.servicesService.syncServices(body.provider, body.margin);
   }
@@ -53,14 +76,18 @@ export class ServicesController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
-  update(@Request() req: any, @Param('id') id: string, @Body() updateServiceDto: UpdateServiceDto) {
+  update(
+    @Request() req: RequestWithUser,
+    @Param('id') id: string,
+    @Body() updateServiceDto: UpdateServiceDto,
+  ) {
     if (req.user.role !== 'admin') throw new ForbiddenException('Admin only');
     return this.servicesService.update(+id, updateServiceDto);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  remove(@Request() req: any, @Param('id') id: string) {
+  remove(@Request() req: RequestWithUser, @Param('id') id: string) {
     if (req.user.role !== 'admin') throw new ForbiddenException('Admin only');
     return this.servicesService.remove(+id);
   }

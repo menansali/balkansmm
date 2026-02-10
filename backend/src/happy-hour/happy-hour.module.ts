@@ -4,9 +4,9 @@ import { HappyHourController } from './happy-hour.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
-    imports: [PrismaModule],
-    controllers: [HappyHourController],
-    providers: [HappyHourService],
-    exports: [HappyHourService],
+  imports: [PrismaModule],
+  controllers: [HappyHourController],
+  providers: [HappyHourService],
+  exports: [HappyHourService],
 })
-export class HappyHourModule { }
+export class HappyHourModule {}

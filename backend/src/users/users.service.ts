@@ -5,7 +5,7 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto) {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
@@ -26,7 +26,7 @@ export class UsersService {
   async findOne(id: number) {
     return this.prisma.user.findUnique({
       where: { id },
-      include: { _count: { select: { orders: true } } }
+      include: { _count: { select: { orders: true } } },
     });
   }
 

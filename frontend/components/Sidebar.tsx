@@ -8,6 +8,12 @@ import { motion } from 'framer-motion';
 import api from '../lib/api';
 import { useTheme } from '../context/ThemeContext';
 
+interface UserProfile {
+    name?: string;
+    balance?: number;
+    role?: string;
+}
+
 const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'New Order', href: '/dashboard/new-order', icon: PlusCircle },
@@ -27,7 +33,7 @@ const navItems = [
 export default function Sidebar() {
     const pathname = usePathname();
     const [isAdmin, setIsAdmin] = useState(false);
-    const [userProfile, setUserProfile] = useState<any>(null);
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
     const { theme } = useTheme();
     const isActive = (path: string) => pathname === path;
 
@@ -37,10 +43,12 @@ export default function Sidebar() {
         const user = localStorage.getItem('user');
         if (user) {
             try {
-                const parsed = JSON.parse(user);
-                setUserProfile(parsed);
-                if (parsed.role === 'admin') setIsAdmin(true);
-            } catch (e) { }
+                const parsed = JSON.parse(user) as UserProfile;
+                queueMicrotask(() => {
+                    setUserProfile(parsed);
+                    if (parsed.role === 'admin') setIsAdmin(true);
+                });
+            } catch { }
         }
 
         const verifyRole = async () => {
@@ -53,8 +61,9 @@ export default function Sidebar() {
                     setIsAdmin(false);
                 }
                 localStorage.setItem('user', JSON.stringify(res.data));
-            } catch (error: any) {
-                if (error.response?.status === 401) {
+            } catch (error: unknown) {
+                const err = error as { response?: { status?: number } };
+                if (err.response?.status === 401) {
                     localStorage.removeItem('token');
                     localStorage.removeItem('user');
                     window.location.href = '/login';

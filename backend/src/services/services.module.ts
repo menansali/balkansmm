@@ -10,4 +10,4 @@ import { MoreThanPanelProvider } from '../providers/morethanpanel.provider';
   controllers: [ServicesController],
   providers: [ServicesService, JustAnotherPanelProvider, MoreThanPanelProvider],
 })
-export class ServicesModule { }
+export class ServicesModule {}

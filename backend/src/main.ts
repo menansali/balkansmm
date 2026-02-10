@@ -43,4 +43,4 @@ async function bootstrap() {
   logger.log(`🚀 BalkanSMM API running on http://localhost:${port}`);
   logger.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
 }
-bootstrap();
+void bootstrap();

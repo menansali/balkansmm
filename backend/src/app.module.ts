@@ -69,5 +69,4 @@ import { HappyHourModule } from './happy-hour/happy-hour.module';
     },
   ],
 })
-export class AppModule { }
-
+export class AppModule {}
