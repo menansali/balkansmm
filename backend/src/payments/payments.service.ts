@@ -1,61 +1,122 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import axios from 'axios';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class PaymentsService {
     private readonly logger = new Logger(PaymentsService.name);
+    private readonly BINANCE_PAY_API = 'https://bpay.binanceapi.com';
 
     constructor(private prisma: PrismaService) { }
 
-    async createDeposit(userId: number, amount: number, gateway: string) {
-        if (gateway === 'coinbase') {
-            const apiKey = process.env.COINBASE_API_KEY;
+    private generateBinanceSignature(payload: string): string {
+        const secretKey = process.env.BINANCE_PAY_SECRET_KEY || '';
+        return crypto.createHmac('sha512', secretKey).update(payload).digest('hex').toUpperCase();
+    }
 
-            if (!apiKey) this.logger.warn('COINBASE_API_KEY missing');
+    private generateNonce(length = 32): string {
+        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+    }
+
+
+    private sanitizeError(error: any): string {
+        if (error?.response?.data) {
+            const data = error.response.data;
+            return `status=${data.status || 'unknown'}, code=${data.code || data.errorCode || 'unknown'}`;
+        }
+        return error?.message || 'Unknown error';
+    }
+
+    async createDeposit(userId: number, amount: number, gateway: string) {
+        if (amount <= 0) {
+            throw new BadRequestException('Amount must be greater than 0');
+        }
+        if (amount > 100000) {
+            throw new BadRequestException('Maximum deposit is $100,000');
+        }
+
+        if (gateway === 'binance') {
+            const apiKey = process.env.BINANCE_PAY_API_KEY;
+            const merchantId = process.env.BINANCE_PAY_MERCHANT_ID;
+
+            if (!apiKey || !merchantId) {
+                this.logger.warn('BINANCE_PAY credentials missing');
+            }
+
+            const timestamp = Date.now();
+            const nonce = this.generateNonce();
+            const merchantTradeNo = `BSMM${userId}_${timestamp}`;
 
             try {
-                const chargeData = {
-                    name: 'BalkanSMM Fund Deposit',
-                    description: `Deposit for User #${userId}`,
-                    local_price: { amount: amount.toString(), currency: 'USD' },
-                    pricing_type: 'fixed_price',
-                    metadata: { userId: userId.toString() },
-                    redirect_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard`,
-                    cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard/add-funds`,
+                const orderData = {
+                    env: {
+                        terminalType: 'WEB'
+                    },
+                    merchantTradeNo,
+                    orderAmount: amount.toFixed(2),
+                    currency: 'USDT',
+                    goods: {
+                        goodsType: '02',
+                        goodsCategory: 'Z000',
+                        referenceGoodsId: `deposit_${userId}`,
+                        goodsName: 'BalkanSMM Fund Deposit',
+                        goodsDetail: `Deposit for User #${userId}`
+                    },
+                    returnUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard`,
+                    cancelUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard/add-funds`,
+                    webhookUrl: `${process.env.BACKEND_URL || 'http://localhost:3001'}/payments/binance-webhook`
                 };
 
-                const response = await axios.post('https://api.commerce.coinbase.com/charges', chargeData, {
-                    headers: {
-                        'X-CC-Api-Key': apiKey,
-                        'X-CC-Version': '2018-03-22',
-                        'Content-Type': 'application/json'
+                const payload = `${timestamp}\n${nonce}\n${JSON.stringify(orderData)}\n`;
+                const signature = this.generateBinanceSignature(payload);
+
+                const response = await axios.post(
+                    `${this.BINANCE_PAY_API}/binancepay/openapi/v3/order`,
+                    orderData,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'BinancePay-Timestamp': timestamp.toString(),
+                            'BinancePay-Nonce': nonce,
+                            'BinancePay-Certificate-SN': apiKey,
+                            'BinancePay-Signature': signature
+                        }
                     }
-                });
+                );
+
+                if (response.data.status !== 'SUCCESS') {
+                    throw new Error(response.data.errorMessage || 'Binance Pay order creation failed');
+                }
 
                 const tx: any = await this.prisma.transaction.create({
                     data: {
                         userId,
                         amount,
                         type: 'deposit',
-                        gateway: 'coinbase',
-                        gatewayTxId: response.data.data.code,
+                        gateway: 'binance',
+                        gatewayTxId: merchantTradeNo,
                         gatewayStatus: 'pending'
                     } as any
                 });
 
                 return {
                     transactionId: tx.id,
-                    gatewayUrl: response.data.data.hosted_url,
-                    gatewayTxId: tx.gatewayTxId
+                    gatewayUrl: response.data.data.universalUrl,
+                    gatewayTxId: tx.gatewayTxId,
+                    qrCodeUrl: response.data.data.qrcodeLink
                 };
             } catch (e: any) {
-                this.logger.error('Coinbase Charge Creation Failed', e?.response?.data || e.message);
+                this.logger.error(`Binance Pay Order Creation Failed: ${this.sanitizeError(e)}`);
                 if (process.env.NODE_ENV === 'production') throw new BadRequestException('Payment gateway error');
             }
         }
 
-        // Mock Fallback (for testing / manual)
         const tx: any = await this.prisma.transaction.create({
             data: {
                 userId,
@@ -76,16 +137,81 @@ export class PaymentsService {
         };
     }
 
+    verifyBinanceWebhookSignature(timestamp: string, nonce: string, body: string, signature: string): boolean {
+        const payload = `${timestamp}\n${nonce}\n${body}\n`;
+        const expectedSignature = this.generateBinanceSignature(payload);
+        return expectedSignature === signature;
+    }
+
+    async processBinanceWebhook(payload: any, timestamp: string, nonce: string, signature: string) {
+        const isValid = this.verifyBinanceWebhookSignature(timestamp, nonce, JSON.stringify(payload), signature);
+        if (!isValid) {
+            throw new BadRequestException('Invalid webhook signature');
+        }
+
+        const { merchantTradeNo } = payload;
+        const bizStatus = payload.bizStatus;
+
+        this.logger.log(`Binance webhook received: ${merchantTradeNo} - Status: ${bizStatus}`);
+
+        if (bizStatus !== 'PAY_SUCCESS') {
+            return { returnCode: 'SUCCESS', returnMessage: 'OK' };
+        }
+
+        return this.prisma.$transaction(async (tx) => {
+            const existingTx: any = await tx.transaction.findFirst({
+                where: { gatewayTxId: merchantTradeNo }
+            } as any);
+
+            if (!existingTx) {
+                this.logger.warn(`Transaction not found: ${merchantTradeNo}`);
+                return { returnCode: 'SUCCESS', returnMessage: 'OK' };
+            }
+
+            if (existingTx.gatewayStatus === 'completed') {
+                return { returnCode: 'SUCCESS', returnMessage: 'Already processed' };
+            }
+
+            const updated = await tx.transaction.updateMany({
+                where: {
+                    id: existingTx.id,
+                    gatewayStatus: { not: 'completed' }
+                } as any,
+                data: { gatewayStatus: 'completed' } as any
+            });
+
+            if (updated.count === 0) {
+                return { returnCode: 'SUCCESS', returnMessage: 'Already processed' };
+            }
+
+            const user = await tx.user.update({
+                where: { id: existingTx.userId },
+                data: { balance: { increment: existingTx.amount } }
+            });
+
+            if (user.referredById) {
+                const commission = existingTx.amount * 0.10;
+                await tx.user.update({
+                    where: { id: user.referredById },
+                    data: { affiliateBalance: { increment: commission } }
+                });
+                this.logger.log(`Affiliate commission $${commission} credited to referrer ${user.referredById}`);
+            }
+
+            this.logger.log(`Deposit completed: $${existingTx.amount} for User ${existingTx.userId}`);
+            return { returnCode: 'SUCCESS', returnMessage: 'OK' };
+        });
+    }
+
     async processWebhook(userId: number, amount: number, secret: string, txId?: string) {
-        // Mock Signature Verification
-        if (secret !== 'my_mock_secret') {
+        const expectedSecret = process.env.MOCK_WEBHOOK_SECRET || 'my_mock_secret';
+        if (secret !== expectedSecret) {
             throw new BadRequestException('Invalid signature');
         }
 
         this.logger.log(`Processing deposit webhook: $${amount} for User ${userId}`);
 
         return this.prisma.$transaction(async (tx) => {
-            // If we have a specific txId (from gateway), update it
             if (txId) {
                 const existingTx: any = await tx.transaction.findFirst({ where: { gatewayTxId: txId } } as any);
                 if (existingTx && existingTx.gatewayStatus === 'completed') {
@@ -93,20 +219,25 @@ export class PaymentsService {
                 }
 
                 if (existingTx) {
-                    await tx.transaction.update({
-                        where: { id: existingTx.id },
+                    const updated = await tx.transaction.updateMany({
+                        where: {
+                            id: existingTx.id,
+                            gatewayStatus: { not: 'completed' }
+                        } as any,
                         data: { gatewayStatus: 'completed' } as any
                     });
+
+                    if (updated.count === 0) {
+                        return { success: true, message: 'Already processed' };
+                    }
                 }
             }
 
-            // Update User Balance
             const user = await tx.user.update({
                 where: { id: userId },
                 data: { balance: { increment: amount } }
             });
 
-            // Affiliate Commission (10%)
             if (user.referredById) {
                 const commission = amount * 0.10;
                 await tx.user.update({

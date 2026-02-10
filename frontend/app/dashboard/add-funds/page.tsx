@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { CreditCard, DollarSign, Bitcoin, Landmark, Copy, Check } from 'lucide-react';
+import { CreditCard, DollarSign, Bitcoin, Copy, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
 import { toast } from 'react-hot-toast';
@@ -35,7 +35,7 @@ export default function AddFundsPage() {
                 setAmount('');
                 // Optionally redirect or refresh balance
                 window.location.reload();
-            } catch (error) {
+            } catch {
                 toast.error("Payment failed. Please try again.");
             } finally {
                 setIsLoading(false);

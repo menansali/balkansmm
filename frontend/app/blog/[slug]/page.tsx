@@ -2,7 +2,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { blogPosts } from '../../../lib/blog-posts';
-import { ArrowLeft, Calendar, User, Share2 } from 'lucide-react';
+import { ArrowLeft, Calendar, User } from 'lucide-react';
+import Image from 'next/image';
 
 interface Props {
     params: Promise<{ slug: string }>
@@ -81,7 +82,7 @@ export default async function BlogPostPage({ params }: Props) {
 
                 <div className="max-w-5xl mx-auto px-6 mb-16">
                     <div className="aspect-[21/9] rounded-3xl overflow-hidden border border-white/10 relative group">
-                        <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
+                        <Image src={post.image} alt={post.title} fill className="object-cover" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                     </div>
                 </div>

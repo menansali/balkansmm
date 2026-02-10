@@ -93,7 +93,7 @@ model Transaction {
   type      String   // deposit, refund, order_charge
   
   // Payment Gateway Info
-  gateway       String? // 'coinbase', 'stripe', 'manual'
+  gateway       String? // 'binance', 'stripe', 'manual'
   gatewayTxId   String? // External Transaction ID
   gatewayStatus String? // 'pending', 'confirmed', 'failed'
 

@@ -1,14 +1,13 @@
 'use client';
 import { useState } from 'react';
-import { Bitcoin, CreditCard, Loader2 } from 'lucide-react';
+import { CreditCard, Loader2 } from 'lucide-react';
 import api from '../../../../lib/api';
 import { toast } from 'react-hot-toast';
-import { useRouter } from 'next/navigation';
+
 
 export default function CryptoPaymentPage() {
     const [amount, setAmount] = useState(10);
     const [loading, setLoading] = useState(false);
-    const router = useRouter();
 
     const handleDeposit = async () => {
         if (amount < 5) {
@@ -20,7 +19,7 @@ export default function CryptoPaymentPage() {
         try {
             const res = await api.post('/payments/deposit', {
                 amount,
-                gateway: 'coinbase'
+                gateway: 'binance'
             });
 
             if (res.data.gatewayUrl) {
@@ -40,7 +39,7 @@ export default function CryptoPaymentPage() {
         <div className="max-w-xl mx-auto space-y-8 pb-20">
             <header className="text-center">
                 <h1 className="text-3xl font-bold mb-2">Deposit with Crypto</h1>
-                <p className="text-gray-400">Pay securely via Coinbase Commerce (BTC, ETH, LTC, USDT, USDC).</p>
+                <p className="text-gray-400">Pay securely via Binance Pay (USDT, BTC, ETH, BNB, BUSD).</p>
             </header>
 
             <div className="glass-card p-8 rounded-3xl border border-ruby-500/20 bg-gradient-to-br from-black to-ruby-900/10">
@@ -69,7 +68,7 @@ export default function CryptoPaymentPage() {
                         disabled={loading}
                         className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {loading ? <Loader2 className="animate-spin" /> : 'Pay with Coinbase'}
+                        {loading ? <Loader2 className="animate-spin" /> : 'Pay with Binance'}
                     </button>
 
                     <div className="text-center text-xs text-gray-500">

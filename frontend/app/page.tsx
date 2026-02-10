@@ -174,7 +174,7 @@ export default function Home() {
 
           <div className="grid md:grid-cols-2 gap-6">
             <FAQItem q="Is it safe for my account?" a="Yes. We use high-quality profiles and natural delivery patterns (drip-feed) to ensure your account remains 100% safe." />
-            <FAQItem q="How do I deposit funds?" a="We accept major Cryptocurrencies via Coinbase Commerce. PayPal is available for verified bulk resellers only." />
+            <FAQItem q="How do I deposit funds?" a="We accept major Cryptocurrencies via Binance Pay (USDT, BTC, ETH, BNB). PayPal is available for verified bulk resellers only." />
             <FAQItem q="What if my followers drop?" a="Many of our services come with a 30-day Refill Button. Just click it in your dashboard to restore any lost followers." />
             <FAQItem q="Can I resell your services?" a="Absolutely. We provide a robust API that allows you to connect your own SMM panel and resell our services for a profit." />
           </div>

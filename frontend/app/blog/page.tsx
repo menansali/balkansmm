@@ -1,7 +1,8 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { blogPosts } from '../../lib/blog-posts';
-import { ArrowRight, Calendar, User, Tag } from 'lucide-react';
+import { ArrowRight, Calendar, User } from 'lucide-react';
+import Image from 'next/image';
 
 export const metadata: Metadata = {
     title: 'SMM Blog & Social Media Tips | BalkanSMM',
@@ -35,10 +36,11 @@ export default function BlogIndex() {
                         <Link href={`/blog/${post.slug}`} key={post.slug} className="group">
                             <article className="h-full glass-card rounded-3xl overflow-hidden border border-white/5 hover:border-ruby-500/30 transition-all hover:bg-white/5 flex flex-col">
                                 <div className="aspect-[16/10] overflow-hidden relative">
-                                    <img
+                                    <Image
                                         src={post.image}
                                         alt={post.title}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                        fill
+                                        className="object-cover group-hover:scale-105 transition-transform duration-700"
                                     />
                                     <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-xs font-bold uppercase tracking-widest text-white border border-white/10">
                                         {post.category}

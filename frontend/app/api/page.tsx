@@ -49,8 +49,8 @@ export default function ApiDocsPage() {
                             </button>
                             <div className="text-gray-500 select-none mb-2"># Request</div>
                             <div className="text-green-400">curl <span className="text-white">https://balkansmm.com/api/v2</span> \</div>
-                            <div className="pl-4">-d 'key=YOUR_API_KEY' \</div>
-                            <div className="pl-4">-d 'action=services'</div>
+                            <div className="pl-4">-d &apos;key=YOUR_API_KEY&apos; \</div>
+                            <div className="pl-4">-d &apos;action=services&apos;</div>
 
                             <div className="text-gray-500 select-none mt-6 mb-2"># Response</div>
                             <div className="text-yellow-400">
@@ -73,11 +73,11 @@ export default function ApiDocsPage() {
                         <div className="bg-black/50 rounded-xl p-4 border border-white/5 font-mono text-sm relative group">
                             <div className="text-gray-500 select-none mb-2"># Request</div>
                             <div className="text-green-400">curl <span className="text-white">https://balkansmm.com/api/v2</span> \</div>
-                            <div className="pl-4">-d 'key=YOUR_API_KEY' \</div>
-                            <div className="pl-4">-d 'action=add' \</div>
-                            <div className="pl-4">-d 'service=1' \</div>
-                            <div className="pl-4">-d 'link=https://instagram.com/p/...' \</div>
-                            <div className="pl-4">-d 'quantity=1000'</div>
+                            <div className="pl-4">-d &apos;key=YOUR_API_KEY&apos; \</div>
+                            <div className="pl-4">-d &apos;action=add&apos; \</div>
+                            <div className="pl-4">-d &apos;service=1&apos; \</div>
+                            <div className="pl-4">-d &apos;link=https://instagram.com/p/...&apos; \</div>
+                            <div className="pl-4">-d &apos;quantity=1000&apos;</div>
 
                             <div className="text-gray-500 select-none mt-6 mb-2"># Response</div>
                             <div className="text-yellow-400">
@@ -97,9 +97,9 @@ export default function ApiDocsPage() {
                         <div className="bg-black/50 rounded-xl p-4 border border-white/5 font-mono text-sm relative group">
                             <div className="text-gray-500 select-none mb-2"># Request</div>
                             <div className="text-green-400">curl <span className="text-white">https://balkansmm.com/api/v2</span> \</div>
-                            <div className="pl-4">-d 'key=YOUR_API_KEY' \</div>
-                            <div className="pl-4">-d 'action=status' \</div>
-                            <div className="pl-4">-d 'order=102931'</div>
+                            <div className="pl-4">-d &apos;key=YOUR_API_KEY&apos; \</div>
+                            <div className="pl-4">-d &apos;action=status&apos; \</div>
+                            <div className="pl-4">-d &apos;order=102931&apos;</div>
 
                             <div className="text-gray-500 select-none mt-6 mb-2"># Response</div>
                             <div className="text-yellow-400">
