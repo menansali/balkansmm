@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { MessageSquare, Plus, Send, User, Shield, Clock } from 'lucide-react';
+import { MessageSquare, Plus, Send, User, Shield } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../../lib/api';
 
@@ -35,25 +35,11 @@ export default function SupportPage() {
 
     const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
-    useEffect(() => {
-        loadTickets();
-    }, []);
-
-    useEffect(() => {
-        if (selectedTicket) {
-            loadMessages(selectedTicket.id);
-        }
-    }, [selectedTicket]);
-
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
-
     const loadTickets = async () => {
         try {
             const res = await api.get('/tickets');
             setTickets(res.data);
-        } catch (e) {
+        } catch {
             console.error('Failed to load tickets');
         }
     };
@@ -63,10 +49,24 @@ export default function SupportPage() {
             const res = await api.get(`/tickets/${id}`);
             setMessages(res.data.messages);
             setSelectedTicket(res.data); // Update full ticket data
-        } catch (e) {
+        } catch {
             console.error('Failed to load messages');
         }
     };
+
+    useEffect(() => {
+        queueMicrotask(() => loadTickets());
+    }, []);
+
+    useEffect(() => {
+        if (selectedTicket) {
+            queueMicrotask(() => loadMessages(selectedTicket.id));
+        }
+    }, [selectedTicket]);
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
 
     const handleCreateTicket = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -76,7 +76,7 @@ export default function SupportPage() {
             setSubject('');
             setInitialMessage('');
             loadTickets();
-        } catch (e) {
+        } catch {
             toast.error('Failed to create ticket');
         }
     };
@@ -97,7 +97,7 @@ export default function SupportPage() {
                 createdAt: new Date().toISOString()
             }]);
             setNewMessage('');
-        } catch (e) {
+        } catch {
             toast.error('Failed to send message');
         }
     };

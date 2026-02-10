@@ -17,18 +17,18 @@ export default function AdminAnnouncementsPage() {
     const [message, setMessage] = useState('');
     const [type, setType] = useState('info'); // info, warning, success
 
-    useEffect(() => {
-        loadAnnouncements();
-    }, []);
-
     const loadAnnouncements = async () => {
         try {
             const res = await api.get('/admin/announcements/all');
             setAnnouncements(res.data);
-        } catch (e) {
+        } catch {
             toast.error('Failed to load announcements');
         }
     };
+
+    useEffect(() => {
+        queueMicrotask(() => loadAnnouncements());
+    }, []);
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -37,7 +37,7 @@ export default function AdminAnnouncementsPage() {
             toast.success('Announcement published');
             setMessage('');
             loadAnnouncements();
-        } catch (e) {
+        } catch {
             toast.error('Failed to create');
         }
     };
@@ -48,7 +48,7 @@ export default function AdminAnnouncementsPage() {
             await api.delete(`/admin/announcements/${id}`);
             toast.success('Deleted');
             loadAnnouncements();
-        } catch (e) {
+        } catch {
             toast.error('Failed to delete');
         }
     };

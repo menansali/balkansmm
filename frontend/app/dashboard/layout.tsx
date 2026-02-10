@@ -12,9 +12,11 @@ import QuickActionsMenu from '@/components/QuickActionsMenu';
 import CommandPalette from '@/components/CommandPalette';
 import { SkeletonDashboard } from '@/components/Skeleton';
 
+type UserData = { name?: string; id?: number; email?: string; role?: string; balance?: number };
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<UserData | null>(null);
     const [loading, setLoading] = useState(true);
     const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
@@ -24,7 +26,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             router.push('/login');
         } else {
             const userData = localStorage.getItem('user');
-            setUser(userData ? JSON.parse(userData) : {});
+            queueMicrotask(() => setUser(userData ? JSON.parse(userData) : {}));
         }
 
         // Initialize theme

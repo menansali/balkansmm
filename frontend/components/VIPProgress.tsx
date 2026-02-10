@@ -23,7 +23,7 @@ export default function VIPProgress({ totalSpent }: VIPProps) {
     if (!nextTier) {
         // Max Level Reached
         return (
-            <div className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 border border-purple-500/30 p-4 rounded-2xl flex items-center justify-between">
+            <div className="bg-linear-to-r from-purple-900/50 to-blue-900/50 border border-purple-500/30 p-4 rounded-2xl flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <Crown className="text-purple-400 fill-purple-400 animate-pulse" />
                     <div>
@@ -60,8 +60,8 @@ export default function VIPProgress({ totalSpent }: VIPProps) {
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
                     transition={{ duration: 1.5, ease: "easeOut" }}
-                    className={`h-full rounded-full bg-gradient-to-r relative overflow-hidden ${currentTier.name === 'Gold' ? 'from-yellow-600 to-yellow-300' : 'from-ruby-600 to-ruby-400'
-                        } after:absolute after:inset-0 after:bg-gradient-to-r after:from-transparent after:via-white/20 after:to-transparent after:animate-shimmer-fast`}
+                    className={`h-full rounded-full bg-linear-to-r relative overflow-hidden ${currentTier.name === 'Gold' ? 'from-yellow-600 to-yellow-300' : 'from-ruby-600 to-ruby-400'
+                        } after:absolute after:inset-0 after:bg-linear-to-r after:from-transparent after:via-white/20 after:to-transparent after:animate-shimmer-fast`}
                 />
             </div>
 

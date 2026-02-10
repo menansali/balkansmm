@@ -82,7 +82,7 @@ export default function Sidebar() {
         )}>
             {/* Logo area */}
             <div className="p-6 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-ruby-500 to-purple-600 animate-pulse-slow"></div>
+                <div className="w-8 h-8 rounded-lg bg-linear-to-br from-ruby-500 to-purple-600 animate-pulse-slow"></div>
                 <span className={clsx(
                     "hidden md:block font-bold text-xl tracking-tight",
                     isDark ? "text-white" : "text-slate-900"
@@ -159,7 +159,7 @@ export default function Sidebar() {
                         ? "bg-white/5 border-white/5"
                         : "bg-slate-100 border-slate-200"
                 )}>
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-ruby-500 to-orange-500 flex items-center justify-center text-white font-bold text-xs">
+                    <div className="w-8 h-8 rounded-full bg-linear-to-tr from-ruby-500 to-orange-500 flex items-center justify-center text-white font-bold text-xs">
                         {userProfile?.name?.charAt(0) || 'U'}
                     </div>
                     <div className="overflow-hidden">

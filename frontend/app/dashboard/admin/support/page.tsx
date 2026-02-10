@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { MessageSquare, Send, User, Shield, CheckCircle } from 'lucide-react';
+import { MessageSquare, Send, User, Shield } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../../../lib/api';
 
@@ -28,25 +28,11 @@ export default function AdminSupportPage() {
     const [replyMessage, setReplyMessage] = useState('');
     const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
-    useEffect(() => {
-        loadTickets();
-    }, []);
-
-    useEffect(() => {
-        if (selectedTicket) {
-            loadMessages(selectedTicket.id);
-        }
-    }, [selectedTicket]);
-
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
-
     const loadTickets = async () => {
         try {
             const res = await api.get('/tickets/admin/all');
             setTickets(res.data);
-        } catch (e) {
+        } catch {
             toast.error('Failed to load tickets');
         }
     };
@@ -56,10 +42,24 @@ export default function AdminSupportPage() {
             const res = await api.get(`/tickets/admin/${id}`);
             setMessages(res.data.messages);
             setSelectedTicket(res.data);
-        } catch (e) {
+        } catch {
             toast.error('Failed to load messages');
         }
     };
+
+    useEffect(() => {
+        queueMicrotask(() => loadTickets());
+    }, []);
+
+    useEffect(() => {
+        if (selectedTicket) {
+            queueMicrotask(() => loadMessages(selectedTicket.id));
+        }
+    }, [selectedTicket]);
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
 
     const handleReply = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -84,7 +84,7 @@ export default function AdminSupportPage() {
             setTickets(tickets.map(t => t.id === selectedTicket.id ? { ...t, status: 'Answered', updatedAt: new Date().toISOString() } : t));
 
             toast.success('Reply sent');
-        } catch (e) {
+        } catch {
             toast.error('Failed to send reply');
         }
     };

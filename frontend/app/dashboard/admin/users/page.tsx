@@ -1,38 +1,39 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Edit2, Save, X, Search, User, DollarSign, Shield } from 'lucide-react';
+import { Edit2, X, Search, DollarSign, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
 import { toast } from 'react-hot-toast';
 
+type UserRow = { id: number; email: string; name?: string; role: string; balance: number };
+
 export default function AdminUsersPage() {
-    const [users, setUsers] = useState<any[]>([]);
+    const [users, setUsers] = useState<UserRow[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState('');
-    const [editingUser, setEditingUser] = useState<any>(null);
+    const [editingUser, setEditingUser] = useState<UserRow | null>(null);
 
-    // Form Stats
     const [formData, setFormData] = useState({
         balance: 0,
         role: 'user'
     });
-
-    useEffect(() => {
-        loadUsers();
-    }, []);
 
     const loadUsers = async () => {
         try {
             const res = await api.get('/admin/users');
             setUsers(res.data);
             setIsLoading(false);
-        } catch (error) {
+        } catch {
             toast.error("Failed to load users");
             setIsLoading(false);
         }
     };
 
-    const handleEditClick = (user: any) => {
+    useEffect(() => {
+        queueMicrotask(() => loadUsers());
+    }, []);
+
+    const handleEditClick = (user: UserRow) => {
         setEditingUser(user);
         setFormData({
             balance: user.balance,
@@ -50,7 +51,7 @@ export default function AdminUsersPage() {
             toast.success("User updated successfully");
             setEditingUser(null);
             loadUsers(); // Refresh
-        } catch (error) {
+        } catch {
             toast.error("Failed to update user");
         }
     };

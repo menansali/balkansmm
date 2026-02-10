@@ -3,24 +3,26 @@ import { useState, useEffect } from 'react';
 import { TrendingUp, Users, ShoppingBag, DollarSign, Database, MessageSquare, Megaphone } from 'lucide-react';
 import api from '../../../lib/api';
 
-export default function AdminDashboard() {
-    const [stats, setStats] = useState<any>(null);
-    const [isLoading, setIsLoading] = useState(true);
+type AdminStats = { revenue: number; profit: number; totalUsers: number; totalOrders: number; recentOrders?: unknown[] };
 
-    useEffect(() => {
-        loadStats();
-    }, []);
+export default function AdminDashboard() {
+    const [stats, setStats] = useState<AdminStats | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     const loadStats = async () => {
         try {
             const res = await api.get('/admin/stats');
             setStats(res.data);
             setIsLoading(false);
-        } catch (e) {
+        } catch {
             console.error('Not admin or failed');
             setIsLoading(false);
         }
     };
+
+    useEffect(() => {
+        queueMicrotask(() => loadStats());
+    }, []);
 
     if (isLoading) return <div className="p-10 text-center">Loading Admin Stats...</div>;
     if (!stats) return <div className="p-10 text-center text-red-500">Access Denied. You are not an admin.</div>;
@@ -114,7 +116,7 @@ export default function AdminDashboard() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5 text-sm">
-                        {stats.recentOrders.map((order: any) => (
+                        {stats.recentOrders?.map((order: { id: number; service?: { name: string } }) => (
                             <tr key={order.id} className="hover:bg-white/5 transition-colors">
                                 <td className="p-4">#{order.id}</td>
                                 <td className="p-4 opacity-70">{order.user.email}</td>

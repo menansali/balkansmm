@@ -94,14 +94,16 @@ export default function CommandPalette() {
 
     useEffect(() => {
         if (isOpen) {
-            setQuery('');
-            setSelectedIndex(0);
+            queueMicrotask(() => {
+                setQuery('');
+                setSelectedIndex(0);
+            });
             setTimeout(() => inputRef.current?.focus(), 100);
         }
     }, [isOpen]);
 
     useEffect(() => {
-        setSelectedIndex(0);
+        queueMicrotask(() => setSelectedIndex(0));
     }, [query]);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -156,7 +158,7 @@ export default function CommandPalette() {
                         <div className="max-h-80 overflow-y-auto p-2">
                             {filteredCommands.length === 0 ? (
                                 <div className="text-center py-8 text-gray-500">
-                                    No results found for "{query}"
+                                    No results found for &quot;{query}&quot;
                                 </div>
                             ) : (
                                 <>
